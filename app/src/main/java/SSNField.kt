@@ -6,9 +6,14 @@ import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatEditText
 
 // I had to add the class construct due to demands from the compiler
-class EditTextObserver(context: Context, attrs: AttributeSet?) : AppCompatEditText(context, attrs){
-    val watcher = SSNTextWatcher()
+class SSNField(context: Context, attrs: AttributeSet?) : AppCompatEditText(context, attrs) , TextInterface  {
+    val watcher = SSNTextWatcher(this)
+
     init {
         addTextChangedListener(watcher)
+    }
+
+    override fun setText(sting: String) {
+        this.setText(sting)
     }
 }

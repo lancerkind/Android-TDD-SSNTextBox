@@ -2,7 +2,7 @@ package mywidgets
 import android.text.Editable
 import android.text.TextWatcher
 
-class SSNTextWatcher  : TextWatcher  {
+class SSNTextWatcher(ssnField: TextInterface)  : TextWatcher  {
 
         // TextWatcher interfacing https://developer.android.com/reference/android/text/TextWatcher
         override fun beforeTextChanged(charactersInTextEdit: CharSequence?, cursorPosition: Int, numberOfCharactersToReplace: Int, countOfCharactersAdded: Int) {
