@@ -13,6 +13,7 @@ class SSNTextWatcher(ssnField: TextInterface)  : TextWatcher  {
         // TextWatcher interfacing
         override fun afterTextChanged(characters: Editable?) {
             println("afterTextChanged: characters " + characters)
+                println("OUR VALUE " + characters!!.length )
         }
 
         // TextWatcher interfacing
