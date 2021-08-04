@@ -26,6 +26,7 @@ import org.junit.Test
 
 import org.junit.Assert.*
 import mywidgets.*
+import org.junit.Before
 import org.junit.runner.RunWith
 import org.junit.runner.manipulation.Ordering
 import org.robolectric.RobolectricTestRunner
@@ -58,7 +59,8 @@ import android.util.AttributeSet as AttributeSet
  * 4 Editable -> implents characterSequence, which has a length.
  *
  * Episode 32:
- * 1 "Stub!" - means that a stub implementation is executing, and not the android jar.
+ * 1 "Stub!" -  means that a stub implementation is executing, and not the android jar.
+ *              SpannableStringBuilder is such a class that becomes stubbed.
  * 2 Due to the above, we got Roboelectric so we can run fast unit tests on the Mac.
  * 3 Roboelectric execution is a *little* slow.  I bet a hand rolled mock will be bunches faster.
  * 4 SpannableStringBuilder is an implementation of Editable
@@ -72,14 +74,18 @@ import android.util.AttributeSet as AttributeSet
 @RunWith(RobolectricTestRunner::class)
 class SSNTextWatcherTest {
 
-    @Test
-    fun instiateTheClass() {
+    private lateinit var textField : TextInterface
 
-        var textField =  object: TextInterface {
-           override fun setText(string: String) {}
+    @Before
+    fun initClassVariables(){
+        textField = object: TextInterface {
+            override fun setText(newText: String) {}
         }
+    }
 
-        var watcher  = SSNTextWatcher( textField)
+    @Test
+    fun canInstantiateSSNTextWatcher() {
+        SSNTextWatcher( textField)
     }
 
     /*
@@ -176,16 +182,56 @@ class SSNTextWatcherTest {
 
     @Test
     fun afterTextChanged_doesntChangeTheString(){
-        var textField =  object: TextInterface {
-            override fun setText(string: String) {}
-        }
-       var watcher = SSNTextWatcher(textField)
+       val sutWatcher = SSNTextWatcher(textField)
 
         // can we override a class
-        var textBoxText = SpannableStringBuilder()
+        val textBoxText = SpannableStringBuilder()
         assertEquals(0, textBoxText.length)
         textBoxText.append("1")
-        watcher.afterTextChanged( textBoxText)
+        sutWatcher.afterTextChanged( textBoxText)
         assertEquals(1, textBoxText.length)
+    }
+
+    @Test
+    fun afterTextChanged_textLengthIs2_addDashCharAtTheEnd(){
+        val sutWatcher = SSNTextWatcher(textField)
+
+        val textBoxText = SpannableStringBuilder()
+        textBoxText.append("12")
+        sutWatcher.afterTextChanged( textBoxText)
+        assertEquals(3, textBoxText.length)
+    }
+
+    @Test
+    // complication: since the UI system isn't running, although the conditions for delete
+    // are created, nothing will actually delete the dash from the textBoxText.
+    fun afterTextChanged_textLengthIs2_thenDeleteDash(){
+        val sutWatcher = SSNTextWatcher(textField)
+
+        val textBoxText = SpannableStringBuilder()
+        textBoxText.append("12-")
+
+        // the below is the conditions to delete the dash
+        sutWatcher.beforeTextChanged(textBoxText,2,1,0)
+
+        // The below is the delete step which happens at onTextChanged
+        // I'm bothered by this, but maybe this will work out. Have to be
+        // cautious that we are testing our system under test and not our test code.
+        textBoxText.delete(2,3)  // In production, Android does this for us.
+        assertEquals("12", textBoxText.toString()) // double checking we got the right affect
+
+        sutWatcher.afterTextChanged( textBoxText)
+        assertEquals(1, textBoxText.length)
+    }
+
+    @Test
+    fun learn_range(){
+        val textBoxText = SpannableStringBuilder()
+        textBoxText.append("12-")
+
+        textBoxText.delete(2,3)  // Android does this.
+        assertEquals("12", textBoxText.toString())
+        textBoxText.delete(1,2) //                characters.delete(1,2)
+        assertEquals("1", textBoxText.toString())
     }
 }
