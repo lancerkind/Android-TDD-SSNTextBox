@@ -34,7 +34,7 @@ This pattern will work not only with creating watchers, but with other View work
 # Other Resources
 Learn about the Software Testing Pyramid on the Agile Thoughts podcast: https://agilenoir.biz/en/agilethoughts/test-automation-pyramid-series/
 
-An IT radio drama about TDD (You never knew that software development could be so dangerous): https://agilenoir.biz/en/agilethoughts/why-developers-dont-tdd-a-radio-drama/
+An IT radio drama about TDD (I bet you never knew that software development could be so dangerous): https://agilenoir.biz/en/agilethoughts/why-developers-dont-tdd-a-radio-drama/
 
 And learn more about TDD on Agile Thoughts: https://agilenoir.biz/en/agilethoughts/test-driven-development-series/
 
