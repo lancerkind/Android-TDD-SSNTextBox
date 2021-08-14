@@ -4,7 +4,10 @@ import android.text.TextWatcher
 
 class SSNTextWatcher(ssnField: TextInterface)  : TextWatcher  {
 
-        // TextWatcher interfacing https://developer.android.com/reference/android/text/TextWatcher
+    var addingDash: Boolean = false
+    private var ssnField : TextInterface = ssnField
+
+    // TextWatcher interfacing https://developer.android.com/reference/android/text/TextWatcher
         override fun beforeTextChanged(charactersInTextEdit: CharSequence?, cursorPosition: Int, numberOfCharactersToReplace: Int, countOfCharactersAdded: Int) {
             //CharSequence s, int start, int count, int after
             println("beforeTextChanged: charactersInTextEdit " + charactersInTextEdit + " cursorPosition " + cursorPosition + "numberOfCharactersToReplace " + numberOfCharactersToReplace + " countOfCharactersAdded " + countOfCharactersAdded)
@@ -28,5 +31,11 @@ class SSNTextWatcher(ssnField: TextInterface)  : TextWatcher  {
             //                int before,
             //                int count)
             println("onTextChanged: charactersInTextEdixt " + charactersInTextEdixt + " cursorPosition " + cursorPosition + " numberOfCharactersToReplace " + numberOfCharactersToReplace + " countOfCharactersAdded " + countOfCharactersAdded )
+            if (cursorPosition  == 2 && addingDash ==  false )  {
+                addingDash = true
+                ssnField.setText1("123-")
+            }
         }
+
+
 }

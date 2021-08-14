@@ -1,7 +1,5 @@
 package mywidgets
 import android.content.Context
-import android.text.Editable
-import android.text.TextWatcher
 import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatEditText
 
@@ -13,7 +11,7 @@ class SSNField(context: Context, attrs: AttributeSet?) : AppCompatEditText(conte
         addTextChangedListener(watcher)
     }
 
-    override fun setText(sting: String) {
-        this.setText(sting)
+    override fun setText1(ssn: String) {
+        this.setText(ssn)
     }
 }

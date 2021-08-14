@@ -64,9 +64,11 @@ import android.util.AttributeSet as AttributeSet
  * 4 SpannableStringBuilder is an implementation of Editable
  * 5 String implements  CharSequence, GetChars,...
  *
- * Example local unit test, which will execute on the development machine (host).
- *
- * See [testing documentation](http://d.android.com/tools/testing).
+ * Episode 34:
+ * 1 Pop problems: Is Pop slowing us down? Why is Pop losing David's shift characters (and period)??
+ * 2 Interfaces require an override?
+ * 3 Interface with setText that overides View setText is a bad thing!!
+ * 4 TDD on asynchronus feature using a spy.
  */
 
 @RunWith(RobolectricTestRunner::class)
@@ -76,7 +78,7 @@ class SSNTextWatcherTest {
     fun instiateTheClass() {
 
         var textField =  object: TextInterface {
-           override fun setText(string: String) {}
+           override fun setText1(string: String) {}
         }
 
         var watcher  = SSNTextWatcher( textField)
@@ -177,7 +179,7 @@ class SSNTextWatcherTest {
     @Test
     fun afterTextChanged_doesntChangeTheString(){
         var textField =  object: TextInterface {
-            override fun setText(string: String) {}
+            override fun setText1(string: String) {}
         }
        var watcher = SSNTextWatcher(textField)
 
@@ -187,5 +189,55 @@ class SSNTextWatcherTest {
         textBoxText.append("1")
         watcher.afterTextChanged( textBoxText)
         assertEquals(1, textBoxText.length)
+    }
+
+    @Test
+    fun onTextChanged_whenThreeNumEnteredAddDash() {
+        // Arrange
+        var textField =  object: TextInterface {
+            var ssn : String = ""
+
+            override fun setText1(ssn: String) {
+                 this.ssn =  ssn
+            }
+        }
+        var watcher = SSNTextWatcher(textField)
+
+        var textBoxText = SpannableStringBuilder()
+        textBoxText.append("123")
+
+        // Act
+        watcher.onTextChanged(textBoxText, 2, 0, 1)
+        // Assert
+        assertEquals(true, watcher.addingDash )
+        assertEquals("123-", textField.ssn )
+    }
+
+    @Test
+    fun onTextChanged_doesntCallSetTextAnInfiniteNumberOfTimes() {
+        // Arrange
+        var textField =  object: TextInterface {
+            var ssn : String = ""
+            var numberOfTimesSetTextIsCalled : Int = 0
+
+            override fun setText1(ssn: String) {
+                numberOfTimesSetTextIsCalled++
+                this.ssn =  ssn
+            }
+        }
+
+        var watcher = SSNTextWatcher(textField)
+
+        var textBoxText = SpannableStringBuilder()
+        textBoxText.append("123")
+
+        //Assert
+        assertEquals(false, watcher.addingDash)
+        // Act
+        watcher.onTextChanged(textBoxText, 2, 0, 1)
+        watcher.onTextChanged(textBoxText, 2, 0, 1)
+
+        // Assert
+        assertEquals(1, textField.numberOfTimesSetTextIsCalled)
     }
 }

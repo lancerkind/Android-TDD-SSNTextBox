@@ -1,6 +1,5 @@
 package mywidgets
 
 interface TextInterface {
-    fun setText (sting: String)
-
+    fun setText1 (ssn: String)
 }
