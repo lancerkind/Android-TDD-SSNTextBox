@@ -1,39 +1,12 @@
 package com.example.texteditbasicactivity
 
-import android.content.*
-import android.content.pm.ApplicationInfo
-import android.content.pm.PackageManager
-import android.content.res.AssetManager
-import android.content.res.Configuration
-import android.content.res.Resources
-import android.database.DatabaseErrorHandler
-import android.database.sqlite.SQLiteDatabase
-import android.graphics.Bitmap
-import android.graphics.drawable.Drawable
-import android.net.Uri
-import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.os.UserHandle
-import android.text.Editable
-import android.text.InputFilter
 import android.text.SpannableStringBuilder
-import android.view.Display
-import androidx.constraintlayout.utils.widget.MockView
-import androidx.core.text.set
-import mywidgets.SSNField
 import org.junit.Test
 
 import org.junit.Assert.*
 import mywidgets.*
 import org.junit.runner.RunWith
-import org.junit.runner.manipulation.Ordering
 import org.robolectric.RobolectricTestRunner
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.io.InputStream
-import android.util.AttributeSet as AttributeSet
 
 
 /**
@@ -75,13 +48,14 @@ import android.util.AttributeSet as AttributeSet
 class SSNTextWatcherTest {
 
     @Test
-    fun instiateTheClass() {
+    fun instiateTheClass_initialStateIsNoDash() {
 
         var textField =  object: TextInterface {
-           override fun setText1(string: String) {}
+           override fun setSSNOnView(string: String) {}
         }
 
         var watcher  = SSNTextWatcher( textField)
+        assertEquals(false, watcher.isAddingDash)
     }
 
     /*
@@ -179,7 +153,7 @@ class SSNTextWatcherTest {
     @Test
     fun afterTextChanged_doesntChangeTheString(){
         var textField =  object: TextInterface {
-            override fun setText1(string: String) {}
+            override fun setSSNOnView(string: String) {}
         }
        var watcher = SSNTextWatcher(textField)
 
@@ -197,7 +171,7 @@ class SSNTextWatcherTest {
         var textField =  object: TextInterface {
             var ssn : String = ""
 
-            override fun setText1(ssn: String) {
+            override fun setSSNOnView(ssn: String) {
                  this.ssn =  ssn
             }
         }
@@ -209,9 +183,73 @@ class SSNTextWatcherTest {
         // Act
         watcher.onTextChanged(textBoxText, 2, 0, 1)
         // Assert
-        assertEquals(true, watcher.addingDash )
+        assertEquals(true, watcher.isAddingDash )
         assertEquals("123-", textField.ssn )
     }
+
+    @Test
+    fun onTextChanged_addingDashIsFalseForFirstNumber()
+    {
+        // Arrange
+        var textField =  object: TextInterface {
+            override fun setSSNOnView(ssn: String) {
+            }
+        }
+
+        var watcher = SSNTextWatcher(textField)
+
+        var textBoxText = SpannableStringBuilder()
+        textBoxText.append("1")
+
+        // Act
+        watcher.onTextChanged(textBoxText, 0, 0, 1)
+
+        // Assert
+        assertEquals(false, watcher.isAddingDash)
+    }
+
+    @Test
+    fun onTextChanged_addingDashIsFalseForSecondNumber()
+    {
+        // Arrange
+        var textField =  object: TextInterface {
+            override fun setSSNOnView(ssn: String) {
+            }
+        }
+
+        var watcher = SSNTextWatcher(textField)
+
+        var textBoxText = SpannableStringBuilder()
+        textBoxText.append("12")
+
+        // Act
+        watcher.onTextChanged(textBoxText, 1, 0, 1)
+
+        // Assert
+        assertEquals(false, watcher.isAddingDash)
+    }
+
+    @Test
+    fun onTextChanged_addingDashIsTrueForThirdNumber()
+    {
+        // Arrange
+        var textField =  object: TextInterface {
+            override fun setSSNOnView(ssn: String) {
+            }
+        }
+
+        var watcher = SSNTextWatcher(textField)
+
+        var textBoxText = SpannableStringBuilder()
+        textBoxText.append("123")
+
+        // Act
+        watcher.onTextChanged(textBoxText, 2, 0, 1)
+
+        // Assert
+        assertEquals(true, watcher.isAddingDash)
+    }
+
 
     @Test
     fun onTextChanged_doesntCallSetTextAnInfiniteNumberOfTimes() {
@@ -220,7 +258,7 @@ class SSNTextWatcherTest {
             var ssn : String = ""
             var numberOfTimesSetTextIsCalled : Int = 0
 
-            override fun setText1(ssn: String) {
+            override fun setSSNOnView(ssn: String) {
                 numberOfTimesSetTextIsCalled++
                 this.ssn =  ssn
             }
@@ -231,8 +269,6 @@ class SSNTextWatcherTest {
         var textBoxText = SpannableStringBuilder()
         textBoxText.append("123")
 
-        //Assert
-        assertEquals(false, watcher.addingDash)
         // Act
         watcher.onTextChanged(textBoxText, 2, 0, 1)
         watcher.onTextChanged(textBoxText, 2, 0, 1)

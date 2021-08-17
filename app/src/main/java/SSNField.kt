@@ -11,7 +11,7 @@ class SSNField(context: Context, attrs: AttributeSet?) : AppCompatEditText(conte
         addTextChangedListener(watcher)
     }
 
-    override fun setText1(ssn: String) {
+    override fun setSSNOnView(ssn: String) {
         this.setText(ssn)
     }
 }
