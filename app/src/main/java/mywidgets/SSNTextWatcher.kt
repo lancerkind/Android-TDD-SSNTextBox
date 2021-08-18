@@ -6,6 +6,7 @@ class SSNTextWatcher(ssnField: TextInterface)  : TextWatcher  {
 
     var isAddingDash: Boolean = false
     private var ssnField : TextInterface = ssnField
+    var ssnNumber: Editable? = null
 
     // TextWatcher interfacing https://developer.android.com/reference/android/text/TextWatcher
         override fun beforeTextChanged(charactersInTextEdit: CharSequence?, cursorPosition: Int, numberOfCharactersToReplace: Int, countOfCharactersAdded: Int) {
@@ -15,6 +16,7 @@ class SSNTextWatcher(ssnField: TextInterface)  : TextWatcher  {
 
         // TextWatcher interfacing
         override fun afterTextChanged(characters: Editable?) {
+            if (ssnNumber == null) ssnNumber = characters
             println("afterTextChanged: characters " + characters)
                 println("OUR VALUE " + characters!!.length )
         }
@@ -26,16 +28,15 @@ class SSNTextWatcher(ssnField: TextInterface)  : TextWatcher  {
                 numberOfCharactersToReplace: Int,
                 countOfCharactersAdded: Int
         ) {
-            // public abstract void onTextChanged (CharSequence s,
-            //                int start,
-            //                int before,
-            //                int count)
             println("onTextChanged: charactersInTextEdixt " + charactersInTextEdixt + " cursorPosition " + cursorPosition + " numberOfCharactersToReplace " + numberOfCharactersToReplace + " countOfCharactersAdded " + countOfCharactersAdded )
             if (cursorPosition  == 2 && isAddingDash ==  false )  {
                 isAddingDash = true
-                ssnField.setSSNOnView("123-")
+                ssnNumber?.append('-')
+                isAddingDash = false
+            }
+            if (cursorPosition == 3 && numberOfCharactersToReplace == 1) {
+                ssnNumber?.delete(2,3)
             }
         }
-
 
 }
