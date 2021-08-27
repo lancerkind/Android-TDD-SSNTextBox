@@ -2,11 +2,9 @@ package mywidgets
 import android.text.Editable
 import android.text.TextWatcher
 
-class SSNTextWatcher(ssnField: TextInterface)  : TextWatcher  {
+public class SSNTextWatcher(var textWatcherActionState: TextWatcherActionState = TextWatcherActionState())  : TextWatcher  {
 
-    var isAddingDash: Boolean = false
-    private var ssnField : TextInterface = ssnField
-    var ssnNumber: Editable? = null
+   var ssnNumber: Editable? = null
 
     // TextWatcher interfacing https://developer.android.com/reference/android/text/TextWatcher
         override fun beforeTextChanged(charactersInTextEdit: CharSequence?, cursorPosition: Int, numberOfCharactersToReplace: Int, countOfCharactersAdded: Int) {
@@ -29,14 +27,31 @@ class SSNTextWatcher(ssnField: TextInterface)  : TextWatcher  {
                 countOfCharactersAdded: Int
         ) {
             println("onTextChanged: charactersInTextEdixt " + charactersInTextEdixt + " cursorPosition " + cursorPosition + " numberOfCharactersToReplace " + numberOfCharactersToReplace + " countOfCharactersAdded " + countOfCharactersAdded )
-            if (cursorPosition  == 2 && isAddingDash ==  false )  {
-                isAddingDash = true
+            if (cursorPosition  == 2 && textWatcherActionState.getIsAddingDash() ==  false  && textWatcherActionState.getIsDeletingDash() == false )  {
+                textWatcherActionState.setIsAddingDash( true)
                 ssnNumber?.append('-')
-                isAddingDash = false
+                textWatcherActionState.setIsAddingDash(false)
             }
+
+            // Couldn't TDD the below. How to test isDeletingDash is working?
             if (cursorPosition == 3 && numberOfCharactersToReplace == 1) {
+                textWatcherActionState.setIsDeletingDash( true)
                 ssnNumber?.delete(2,3)
+                textWatcherActionState.setIsDeletingDash(false)
             }
         }
 
+    class David{
+         constructor(){}
+
+    }
+
+    public open class TextWatcherActionState(private var isDeletingDash: Boolean = false, private var isAddingDash: Boolean = false) {
+
+        public open fun setIsDeletingDash(state: Boolean) { this.isDeletingDash = state      }
+        public open fun getIsDeletingDash() : Boolean { return this.isDeletingDash        }
+
+        public open fun setIsAddingDash(state: Boolean) { this.isAddingDash = state}
+        public open fun getIsAddingDash() : Boolean {return this.isAddingDash        }
+    }
 }

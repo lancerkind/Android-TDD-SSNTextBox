@@ -2,6 +2,7 @@ package com.example.texteditbasicactivity
 
 import android.text.SpannableStringBuilder
 import org.junit.Test
+//import org.junit.jupiter.api.Test
 
 import org.junit.Assert.*
 import mywidgets.*
@@ -44,142 +45,47 @@ import org.robolectric.RobolectricTestRunner
  * 3 Interface with setText that overides View setText is a bad thing!!
  * 4 TDD on asynchronus feature using a spy.
  *
+ * Episode 36:
+ *  1 having difficulty doing TDD for flags that protect us from asynchronus re-entry.
+ *    So we added a spy.
+ *  2 Can add private to the class declaration so you don't get public properties.
+ *  3 "Cant tell a computer what to do until you learn how to tell the computer what to do." -Lance
+ *
+ *
  * Off Camera session:
  * - In text watcher, afterTextChange, when it modifies the Editable, Android calls the Before, On, After before
  * it exits the afterTextChange.
+ *
+ *
  */
 
 @RunWith(RobolectricTestRunner::class)
 class SSNTextWatcherTest {
 
     @Test
-    fun instiateTheClass_initialStateIsNoDash() {
-
-        val textField =  object: TextInterface {
-           override fun setSSNOnView(string: String) {}
-        }
-
-        val watcher  = SSNTextWatcher( textField)
-        assertEquals(false, watcher.isAddingDash)
+    fun instantiateTheClass_initialStateIsNoDash() {
+        val watcher = SSNTextWatcher()
+        assertEquals(false, watcher.textWatcherActionState.getIsAddingDash())
     }
 
-    /*
-    class MockEditable(override val length: Int) : Editable {
-        //override public open val length: Int =  42
-
-        override fun get(index: Int): Char {
-            TODO("Not yet implemented")
-        }
-
-        override fun subSequence(startIndex: Int, endIndex: Int): CharSequence {
-            TODO("Not yet implemented")
-        }
-
-        override fun getChars(p0: Int, p1: Int, p2: CharArray?, p3: Int) {
-        }
-
-        override fun <T : Any?> getSpans(p0: Int, p1: Int, p2: Class<T>?): Array<T> {
-            TODO("Not yet implemented")
-        }
-
-        override fun getSpanStart(p0: Any?): Int {
-            TODO("Not yet implemented")
-        }
-
-        override fun getSpanEnd(p0: Any?): Int {
-            TODO("Not yet implemented")
-        }
-
-        override fun getSpanFlags(p0: Any?): Int {
-            TODO("Not yet implemented")
-        }
-
-        override fun nextSpanTransition(p0: Int, p1: Int, p2: Class<*>?): Int {
-            TODO("Not yet implemented")
-        }
-
-        override fun setSpan(p0: Any?, p1: Int, p2: Int, p3: Int) {
-        }
-
-        override fun removeSpan(p0: Any?) {
-            TODO("Not yet implemented")
-        }
-
-        override fun append(p0: CharSequence?): Editable {
-            TODO("Not yet implemented")
-        }
-
-        override fun append(p0: CharSequence?, p1: Int, p2: Int): Editable {
-            TODO("Not yet implemented")
-        }
-
-        override fun append(p0: Char): Editable {
-            TODO("Not yet implemented")
-        }
-
-        override fun replace(p0: Int, p1: Int, p2: CharSequence?, p3: Int, p4: Int): Editable {
-            TODO("Not yet implemented")
-        }
-
-        override fun replace(p0: Int, p1: Int, p2: CharSequence?): Editable {
-            TODO("Not yet implemented")
-        }
-
-        override fun insert(p0: Int, p1: CharSequence?, p2: Int, p3: Int): Editable {
-            TODO("Not yet implemented")
-        }
-
-        override fun insert(p0: Int, p1: CharSequence?): Editable {
-            TODO("Not yet implemented")
-        }
-
-        override fun delete(p0: Int, p1: Int): Editable {
-            TODO("Not yet implemented")
-        }
-
-        override fun clear() {
-            TODO("Not yet implemented")
-        }
-
-        override fun clearSpans() {
-            TODO("Not yet implemented")
-        }
-
-        override fun setFilters(p0: Array<out InputFilter>?) {
-            TODO("Not yet implemented")
-        }
-
-        override fun getFilters(): Array<InputFilter> {
-            TODO("Not yet implemented")
-        }
-    }
-*/
 
     @Test
-    fun afterTextChanged_doesntChangeTheString(){
-        val textField =  object: TextInterface {
-            override fun setSSNOnView(ssn: String) {}
-        }
-       val watcher = SSNTextWatcher(textField)
+
+    fun afterTextChanged_doesntChangeTheString() {
+        val watcher = SSNTextWatcher()
 
         // can we override a class
         val textBoxText = SpannableStringBuilder()
         assertEquals(0, textBoxText.length)
         textBoxText.append("1")
-        watcher.afterTextChanged( textBoxText)
+        watcher.afterTextChanged(textBoxText)
         assertEquals(1, textBoxText.length)
     }
 
     @Test
     fun onTextChanged_whenThreeNumbersAreEnteredAddDash() {
         // Arrange
-        val textField =  object: TextInterface {
-            var ssn : String = ""
-
-            override fun setSSNOnView(ssn: String)   {}
-        }
-
-        val watcher = SSNTextWatcher(textField)
+        val watcher = SSNTextWatcher()
 
         val textBoxText = SpannableStringBuilder()
         textBoxText.append("123")
@@ -195,15 +101,9 @@ class SSNTextWatcherTest {
     }
 
     @Test
-    fun onTextChanged_addingDashIsFalseForFirstNumber()
-    {
+    fun onTextChanged_addingDashIsFalseForFirstNumber() {
         // Arrange
-        val textField =  object: TextInterface {
-            override fun setSSNOnView(ssn: String) {
-            }
-        }
-
-        val watcher = SSNTextWatcher(textField)
+        val watcher = SSNTextWatcher()
 
         val textBoxText = SpannableStringBuilder()
         textBoxText.append("1")
@@ -212,19 +112,13 @@ class SSNTextWatcherTest {
         watcher.onTextChanged(textBoxText, 0, 0, 1)
 
         // Assert
-        assertEquals(false, watcher.isAddingDash)
+        assertEquals(false, watcher.textWatcherActionState.getIsAddingDash())
     }
 
     @Test
-    fun onTextChanged_addingDashIsFalseForSecondNumber()
-    {
+    fun onTextChanged_addingDashIsFalseForSecondNumber() {
         // Arrange
-        val textField =  object: TextInterface {
-            override fun setSSNOnView(ssn: String) {
-            }
-        }
-
-        val watcher = SSNTextWatcher(textField)
+        val watcher = SSNTextWatcher()
 
         val textBoxText = SpannableStringBuilder()
         textBoxText.append("12")
@@ -233,19 +127,21 @@ class SSNTextWatcherTest {
         watcher.onTextChanged(textBoxText, 1, 0, 1)
 
         // Assert
-        assertEquals(false, watcher.isAddingDash)
+        assertEquals(false, watcher.textWatcherActionState.getIsAddingDash())
     }
 
     @Test
-    fun onTextChanged_addingDashIsTrueForThirdNumber()
-    {
+    fun onTextChanged_addingDashIsTrueForThirdNumber() {
         // Arrange
-        val textField =  object: TextInterface {
-            override fun setSSNOnView(ssn: String) {
+        val actionState007 = object: SSNTextWatcher.TextWatcherActionState(){
+            var addingDashRecorder  = ""
+            override fun setIsAddingDash(state: Boolean) {
+                addingDashRecorder += state.toString()
+                super.setIsAddingDash(state)
             }
         }
 
-        val watcher = SSNTextWatcher(textField)
+        val watcher = SSNTextWatcher(actionState007)
 
         val textBoxText = SpannableStringBuilder()
         textBoxText.append("123")
@@ -253,30 +149,23 @@ class SSNTextWatcherTest {
         // Act
         watcher.onTextChanged(textBoxText, 2, 0, 1)
 
-        // It turns out that Android immediatly calls other event functions rather than waiting for the current event to finish
-        // So the below isn't going to work.
-        // Assert
-//        assertEquals(true, watcher.isAddingDash)
+        assertEquals("truefalse",  actionState007.addingDashRecorder )
     }
 
     @Test
-    fun onTextChanged_deletesTheDash_shouldDeleteCharacterBeforeDash() {
+    fun onTextChanged_userDeletesTheDash_phoneDeletesCharacterBeforeDash() {
         // Arrange
-        val textField =  object: TextInterface {
-
-            override fun setSSNOnView(ssn: String) {   }
-        }
-
-        val watcher = SSNTextWatcher(textField)
+        val watcher = SSNTextWatcher()
 
         val textBoxText = SpannableStringBuilder()
         textBoxText.append("123")
+        //phone adds dash
         watcher.afterTextChanged(textBoxText)
         watcher.onTextChanged(textBoxText, 2, 0, 1)
         assertEquals("123-", textBoxText.toString())
         // Act
-        textBoxText.delete(3,4)  // user deletes dash
-        assertEquals("123", watcher.ssnNumber.toString())
+        textBoxText.delete(3, 4)  // user deletes dash
+        assertEquals("123", watcher.ssnNumber.toString()) // dash deleted on phone
         watcher.onTextChanged(textBoxText, 3, 1, 0)
         watcher.afterTextChanged(textBoxText)
 
@@ -286,39 +175,26 @@ class SSNTextWatcherTest {
 
 
     @Test
-    fun learn_delete()
-    {
-        val textBoxText = SpannableStringBuilder()
-        textBoxText.append("123")
-        textBoxText.delete(2,3)
+    fun learn_delete() {
+        var textBoxText = SpannableStringBuilder()
+        textBoxText.append("123-")
+        textBoxText.delete(2, 4)
         assertEquals("12", textBoxText.toString())
     }
 
     @Ignore
     @Test
-    fun onTextChanged_doesntCallSetTextAnInfiniteNumberOfTimes() {
+    fun onTextChanged_wontDoAnythingIfIsDeleting() {
         // Arrange
-        val textField =  object: TextInterface {
-            var ssn : String = ""
-            var numberOfTimesSetTextIsCalled : Int = 0
-
-            override fun setSSNOnView(ssn: String) {
-                numberOfTimesSetTextIsCalled++
-                this.ssn =  ssn
-            }
-        }
-
-        val watcher = SSNTextWatcher(textField)
+        val watcher = SSNTextWatcher()
 
         val textBoxText = SpannableStringBuilder()
-        textBoxText.append("123")
+        textBoxText.append("123-")
         watcher.afterTextChanged(textBoxText)
-
+        watcher.onTextChanged(textBoxText, 3, 1, 0)
+        assertEquals("12", watcher.ssnNumber.toString())
+   // how to test if can be called recursively????
         // Act
         watcher.onTextChanged(textBoxText, 2, 0, 1)
-        assertEquals("123-", watcher.ssnNumber.toString())
-        watcher.onTextChanged(textBoxText, 2, 0, 1)
-        //assert
-        assertEquals("123-", watcher.ssnNumber.toString()) // should be no change.
     }
 }
