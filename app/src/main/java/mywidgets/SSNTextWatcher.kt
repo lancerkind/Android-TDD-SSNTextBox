@@ -26,32 +26,26 @@ public class SSNTextWatcher(var textWatcherActionState: TextWatcherActionState =
                 numberOfCharactersToReplace: Int,
                 countOfCharactersAdded: Int
         ) {
+            if (textWatcherActionState.getSkipOnTextChanged() == true) return;
+
             println("onTextChanged: charactersInTextEdixt " + charactersInTextEdixt + " cursorPosition " + cursorPosition + " numberOfCharactersToReplace " + numberOfCharactersToReplace + " countOfCharactersAdded " + countOfCharactersAdded )
-            if (cursorPosition  == 2 && textWatcherActionState.getIsAddingDash() ==  false  && textWatcherActionState.getIsDeletingDash() == false )  {
-                textWatcherActionState.setIsAddingDash( true)
+            if (cursorPosition  == 2 )  {
+                textWatcherActionState.setSkipOnTextChanged( true)
                 ssnNumber?.append('-')
-                textWatcherActionState.setIsAddingDash(false)
+                textWatcherActionState.setSkipOnTextChanged( false)
             }
 
             // Couldn't TDD the below. How to test isDeletingDash is working?
-            if (cursorPosition == 3 && numberOfCharactersToReplace == 1) {
-                textWatcherActionState.setIsDeletingDash( true)
+            if (cursorPosition == 3 && numberOfCharactersToReplace == 1 ) {
+                textWatcherActionState.setSkipOnTextChanged( true)
                 ssnNumber?.delete(2,3)
-                textWatcherActionState.setIsDeletingDash(false)
+                textWatcherActionState.setSkipOnTextChanged( false)
             }
         }
 
-    class David{
-         constructor(){}
+    public open class TextWatcherActionState( private var isSkipOnTextChanged: Boolean = false) {
 
-    }
-
-    public open class TextWatcherActionState(private var isDeletingDash: Boolean = false, private var isAddingDash: Boolean = false) {
-
-        public open fun setIsDeletingDash(state: Boolean) { this.isDeletingDash = state      }
-        public open fun getIsDeletingDash() : Boolean { return this.isDeletingDash        }
-
-        public open fun setIsAddingDash(state: Boolean) { this.isAddingDash = state}
-        public open fun getIsAddingDash() : Boolean {return this.isAddingDash        }
+        public open fun setSkipOnTextChanged(state: Boolean) { this.isSkipOnTextChanged = state}
+        public open fun getSkipOnTextChanged() : Boolean {return this.isSkipOnTextChanged }
     }
 }

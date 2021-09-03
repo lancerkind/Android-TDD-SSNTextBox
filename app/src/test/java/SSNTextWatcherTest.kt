@@ -6,7 +6,6 @@ import org.junit.Test
 
 import org.junit.Assert.*
 import mywidgets.*
-import org.junit.Ignore
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
@@ -30,7 +29,7 @@ import org.robolectric.RobolectricTestRunner
  * - missing and yet the application runs, do a command line: $ gradlew clean test
  * 2 Zoom isn't good at switching drivers for some reason. Next show, let's use Pop.
  * 3 afterTextChanged (before could work too) event does what we need: length, editable.
- * 4 Editable -> implents characterSequence, which has a length.
+ * 4 Editable -> implements characterSequence, which has a length.
  *
  * Episode 32:
  * 1 "Stub!" - means that a stub implementation is executing, and not the android jar.
@@ -42,14 +41,20 @@ import org.robolectric.RobolectricTestRunner
  * Episode 34:
  * 1 Pop problems: Is Pop slowing us down? Why is Pop losing David's shift characters (and period)??
  * 2 Interfaces require an override?
- * 3 Interface with setText that overides View setText is a bad thing!!
- * 4 TDD on asynchronus feature using a spy.
+ * 3 Interface with setText that overrides View setText is a bad thing!!
+ * 4 TDD on asynchronous feature using a spy.
  *
  * Episode 36:
- *  1 having difficulty doing TDD for flags that protect us from asynchronus re-entry.
+ *  1 having difficulty doing TDD for flags that protect us from asynchronous re-entry.
  *    So we added a spy.
  *  2 Can add private to the class declaration so you don't get public properties.
  *  3 "Cant tell a computer what to do until you learn how to tell the computer what to do." -Lance
+ *
+ * Episode 37:
+ *  1 Didn't get Pop to connect.
+ *  2 A lot of Reverse TDD to see what code isn't covered by an assert.
+ *  3 Stopped and looked at the code and came up with a simpler solution (one bool instead of 2, if statements
+ *  getting more complicated).
  *
  *
  * Off Camera session:
@@ -65,7 +70,7 @@ class SSNTextWatcherTest {
     @Test
     fun instantiateTheClass_initialStateIsNoDash() {
         val watcher = SSNTextWatcher()
-        assertEquals(false, watcher.textWatcherActionState.getIsAddingDash())
+        assertEquals(false, watcher.textWatcherActionState.getSkipOnTextChanged())
     }
 
 
@@ -112,7 +117,7 @@ class SSNTextWatcherTest {
         watcher.onTextChanged(textBoxText, 0, 0, 1)
 
         // Assert
-        assertEquals(false, watcher.textWatcherActionState.getIsAddingDash())
+        assertEquals(false, watcher.textWatcherActionState.getSkipOnTextChanged())
     }
 
     @Test
@@ -127,7 +132,7 @@ class SSNTextWatcherTest {
         watcher.onTextChanged(textBoxText, 1, 0, 1)
 
         // Assert
-        assertEquals(false, watcher.textWatcherActionState.getIsAddingDash())
+        assertEquals(false, watcher.textWatcherActionState.getSkipOnTextChanged())
     }
 
     @Test
@@ -135,9 +140,9 @@ class SSNTextWatcherTest {
         // Arrange
         val actionState007 = object: SSNTextWatcher.TextWatcherActionState(){
             var addingDashRecorder  = ""
-            override fun setIsAddingDash(state: Boolean) {
+            override fun setSkipOnTextChanged(state: Boolean) {
                 addingDashRecorder += state.toString()
-                super.setIsAddingDash(state)
+                super.setSkipOnTextChanged(state)
             }
         }
 
@@ -151,6 +156,29 @@ class SSNTextWatcherTest {
 
         assertEquals("truefalse",  actionState007.addingDashRecorder )
     }
+
+    @Test
+    fun onTextChanged_whenAddingDashDoesntRecurse() {
+        // Arrange
+        val actionState007 = object: SSNTextWatcher.TextWatcherActionState(){
+            override fun getSkipOnTextChanged(): Boolean {
+                return true
+            }
+        }
+
+        val watcher = SSNTextWatcher(actionState007)
+
+        val textBoxText = SpannableStringBuilder()
+        textBoxText.append("123-")
+        watcher.afterTextChanged(textBoxText)
+
+        // Act
+        watcher.onTextChanged(textBoxText, 2, 0, 1)
+
+        assertEquals("123-",  textBoxText.toString())
+    }
+
+
 
     @Test
     fun onTextChanged_userDeletesTheDash_phoneDeletesCharacterBeforeDash() {
@@ -176,25 +204,22 @@ class SSNTextWatcherTest {
 
     @Test
     fun learn_delete() {
-        var textBoxText = SpannableStringBuilder()
+        val textBoxText = SpannableStringBuilder()
         textBoxText.append("123-")
         textBoxText.delete(2, 4)
         assertEquals("12", textBoxText.toString())
     }
 
-    @Ignore
     @Test
-    fun onTextChanged_wontDoAnythingIfIsDeleting() {
+    fun onTextChanged_wontRecurseWhenUserDeletesDash() {
         // Arrange
         val watcher = SSNTextWatcher()
-
         val textBoxText = SpannableStringBuilder()
         textBoxText.append("123-")
         watcher.afterTextChanged(textBoxText)
+        textBoxText.delete(3,4) // user deletes dash
+        // Act
         watcher.onTextChanged(textBoxText, 3, 1, 0)
         assertEquals("12", watcher.ssnNumber.toString())
-   // how to test if can be called recursively????
-        // Act
-        watcher.onTextChanged(textBoxText, 2, 0, 1)
     }
 }
