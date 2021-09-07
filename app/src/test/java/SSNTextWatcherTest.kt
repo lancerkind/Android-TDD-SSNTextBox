@@ -77,13 +77,15 @@ class SSNTextWatcherTest {
     @Test
 
     fun afterTextChanged_doesntChangeTheString() {
+        // Arrange
         val watcher = SSNTextWatcher()
 
-        // can we override a class
         val textBoxText = SpannableStringBuilder()
         assertEquals(0, textBoxText.length)
         textBoxText.append("1")
+        // Act
         watcher.afterTextChanged(textBoxText)
+        // Assert
         assertEquals(1, textBoxText.length)
     }
 
@@ -100,8 +102,6 @@ class SSNTextWatcherTest {
         watcher.onTextChanged(textBoxText, 2, 0, 1)
 
         // Assert
-        // see comment about Android and events.
-//        assertEquals(true, watcher.isAddingDash )
         assertEquals("123-", watcher.ssnNumber.toString())
     }
 
@@ -109,7 +109,6 @@ class SSNTextWatcherTest {
     fun onTextChanged_addingDashIsFalseForFirstNumber() {
         // Arrange
         val watcher = SSNTextWatcher()
-
         val textBoxText = SpannableStringBuilder()
         textBoxText.append("1")
 
@@ -124,7 +123,6 @@ class SSNTextWatcherTest {
     fun onTextChanged_addingDashIsFalseForSecondNumber() {
         // Arrange
         val watcher = SSNTextWatcher()
-
         val textBoxText = SpannableStringBuilder()
         textBoxText.append("12")
 
@@ -145,7 +143,6 @@ class SSNTextWatcherTest {
                 super.setSkipOnTextChanged(state)
             }
         }
-
         val watcher = SSNTextWatcher(actionState007)
 
         val textBoxText = SpannableStringBuilder()
@@ -154,6 +151,7 @@ class SSNTextWatcherTest {
         // Act
         watcher.onTextChanged(textBoxText, 2, 0, 1)
 
+        // Assert
         assertEquals("truefalse",  actionState007.addingDashRecorder )
     }
 
@@ -175,6 +173,7 @@ class SSNTextWatcherTest {
         // Act
         watcher.onTextChanged(textBoxText, 2, 0, 1)
 
+        // Assert
         assertEquals("123-",  textBoxText.toString())
     }
 
@@ -184,13 +183,13 @@ class SSNTextWatcherTest {
     fun onTextChanged_userDeletesTheDash_phoneDeletesCharacterBeforeDash() {
         // Arrange
         val watcher = SSNTextWatcher()
-
         val textBoxText = SpannableStringBuilder()
         textBoxText.append("123")
         //phone adds dash
         watcher.afterTextChanged(textBoxText)
         watcher.onTextChanged(textBoxText, 2, 0, 1)
         assertEquals("123-", textBoxText.toString())
+
         // Act
         textBoxText.delete(3, 4)  // user deletes dash
         assertEquals("123", watcher.ssnNumber.toString()) // dash deleted on phone
@@ -203,10 +202,13 @@ class SSNTextWatcherTest {
 
 
     @Test
-    fun learn_delete() {
+    fun learn_howToUsedelete() {
         val textBoxText = SpannableStringBuilder()
         textBoxText.append("123-")
-        textBoxText.delete(2, 4)
+
+        // Act
+        textBoxText.delete(2, 4)  // the boundry conditions are odd with this API.
+
         assertEquals("12", textBoxText.toString())
     }
 
@@ -218,8 +220,11 @@ class SSNTextWatcherTest {
         textBoxText.append("123-")
         watcher.afterTextChanged(textBoxText)
         textBoxText.delete(3,4) // user deletes dash
+
         // Act
         watcher.onTextChanged(textBoxText, 3, 1, 0)
+
+        // Assert
         assertEquals("12", watcher.ssnNumber.toString())
     }
 }
