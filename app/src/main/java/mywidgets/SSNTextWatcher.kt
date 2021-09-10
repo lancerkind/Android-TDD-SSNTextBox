@@ -29,20 +29,28 @@ public class SSNTextWatcher(var textWatcherActionState: TextWatcherActionState =
             if (textWatcherActionState.getSkipOnTextChanged() == true) return;
 
             println("onTextChanged: charactersInTextEdixt " + charactersInTextEdixt + " cursorPosition " + cursorPosition + " numberOfCharactersToReplace " + numberOfCharactersToReplace + " countOfCharactersAdded " + countOfCharactersAdded )
-            if (cursorPosition  == 2 )  {
+            if (cursorPosition  == 2 || cursorPosition == 5 )  {
                 textWatcherActionState.setSkipOnTextChanged( true)
                 ssnNumber?.append('-')
                 textWatcherActionState.setSkipOnTextChanged( false)
             }
 
-            // Couldn't TDD the below. How to test isDeletingDash is working?
             if (cursorPosition == 3 && numberOfCharactersToReplace == 1 ) {
                 textWatcherActionState.setSkipOnTextChanged( true)
                 ssnNumber?.delete(2,3)
                 textWatcherActionState.setSkipOnTextChanged( false)
             }
+
+            if(cursorPosition == 6 && numberOfCharactersToReplace == 1) {
+                textWatcherActionState.setSkipOnTextChanged(true)
+                ssnNumber?.delete(5,6)
+                textWatcherActionState.setSkipOnTextChanged(false)
+            }
         }
 
+    /**
+     * This class allows spying on boolean state changes for unit testing
+      */
     public open class TextWatcherActionState( private var isSkipOnTextChanged: Boolean = false) {
 
         public open fun setSkipOnTextChanged(state: Boolean) { this.isSkipOnTextChanged = state}
