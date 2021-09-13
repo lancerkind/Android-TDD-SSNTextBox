@@ -66,19 +66,54 @@ import org.robolectric.RobolectricTestRunner
  * - In text watcher, afterTextChange, when it modifies the Editable, Android calls the Before, On, After before
  * it exits the afterTextChange.
  *
+ * 9/13:
+ * - Able to override value properties (see MySpannableStringBuilder):
+ * Class Foo : Bar {
+ *   override val length: Int
+ *    get() = buffer.length
+ * }
+ * - Not using Roboelectric speed up micro test execution.  Roboelectric uses dynamicly generated mocks which
+ * are slower than a static mock
+ *- By getting of Roboelectric, we can use the latest JUnit.
  *
  */
 
-@RunWith(RobolectricTestRunner::class)
+//@RunWith(RobolectricTestRunner::class)
 class SSNTextWatcherTest {
 
+    class MySpannableStringBuilder : SpannableStringBuilder() {
+        private var buffer = StringBuffer()
+
+        override val length: Int
+            get() = buffer.length
+
+        override fun delete(start: Int, end: Int): SpannableStringBuilder {
+            buffer.delete(start, end)
+            return this
+        }
+
+        override fun append(text: CharSequence): SpannableStringBuilder {
+            buffer.append(text)
+            return this
+        }
+
+        override fun append(text: Char): SpannableStringBuilder {
+            buffer.append(text)
+            return this
+        }
+
+        override fun toString(): String {
+            return buffer.toString()
+        }
+    }
+
     private lateinit var watcher : SSNTextWatcher
-    private lateinit var textBox : SpannableStringBuilder
+    private lateinit var textBox : MySpannableStringBuilder
 
     @Before
     fun initializeWatcherAndTextBox(){
         watcher =  SSNTextWatcher()
-        textBox = SpannableStringBuilder()
+        textBox = MySpannableStringBuilder()
     }
 
     @Test
