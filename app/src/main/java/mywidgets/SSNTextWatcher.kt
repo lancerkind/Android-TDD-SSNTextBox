@@ -2,10 +2,13 @@ package mywidgets
 import android.text.Editable
 import android.text.TextWatcher
 
-public class SSNTextWatcher(var textWatcherActionState: TextWatcherActionState = TextWatcherActionState())  : TextWatcher  {
+class SSNTextWatcher(val ssnField: SSNFieldInterface, var textWatcherActionState: TextWatcherActionState = TextWatcherActionState())  : TextWatcher  {
 
-   var ssnNumber: Editable? = null
+    companion object {
+        const val mask = "xxx-xx-xxx"
+    }
 
+    var ssnNumber: Editable? = null
     // TextWatcher interfacing https://developer.android.com/reference/android/text/TextWatcher
         override fun beforeTextChanged(charactersInTextEdit: CharSequence?, cursorPosition: Int, numberOfCharactersToReplace: Int, countOfCharactersAdded: Int) {
             //CharSequence s, int start, int count, int after
@@ -26,7 +29,7 @@ public class SSNTextWatcher(var textWatcherActionState: TextWatcherActionState =
                 numberOfCharactersToReplace: Int,
                 countOfCharactersAdded: Int
         ) {
-            if (textWatcherActionState.getSkipOnTextChanged() == true) return;
+            if (textWatcherActionState.getSkipOnTextChanged() == true) return
 
             println("onTextChanged: charactersInTextEdixt " + charactersInTextEdixt + " cursorPosition " + cursorPosition + " numberOfCharactersToReplace " + numberOfCharactersToReplace + " countOfCharactersAdded " + countOfCharactersAdded )
             if (cursorPosition  == 2 || cursorPosition == 5 )  {
@@ -51,9 +54,9 @@ public class SSNTextWatcher(var textWatcherActionState: TextWatcherActionState =
     /**
      * This class allows spying on boolean state changes for unit testing
       */
-    public open class TextWatcherActionState( private var isSkipOnTextChanged: Boolean = false) {
+    open class TextWatcherActionState( private var isSkipOnTextChanged: Boolean = false) {
 
-        public open fun setSkipOnTextChanged(state: Boolean) { this.isSkipOnTextChanged = state}
-        public open fun getSkipOnTextChanged() : Boolean {return this.isSkipOnTextChanged }
+        open fun setSkipOnTextChanged(state: Boolean) { this.isSkipOnTextChanged = state}
+        open fun getSkipOnTextChanged() : Boolean {return this.isSkipOnTextChanged }
     }
 }

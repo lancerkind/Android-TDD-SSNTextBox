@@ -64,10 +64,10 @@ dependencies {
     implementation 'androidx.navigation:navigation-ui-ktx:2.3.5'
 
     // Arctic Fox change below. See: https://stackoverflow.com/questions/67713500/unit-tests-not-working-on-android-studio-arctic-fox
-    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.7.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter-engine:+'
     //testImplementation 'junit:junit:4.+'  // should get rid of this old JUnit.
     testImplementation 'org.junit.vintage:junit-vintage-engine'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
-    testImplementation 'org.robolectric:robolectric:4.4'
+    testImplementation 'org.robolectric:robolectric:+'
 }

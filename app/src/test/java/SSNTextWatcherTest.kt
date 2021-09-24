@@ -7,6 +7,7 @@ import org.junit.Test
 import org.junit.Assert.*
 import mywidgets.*
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
@@ -76,6 +77,17 @@ import org.robolectric.RobolectricTestRunner
  * are slower than a static mock
  *- By getting of Roboelectric, we can use the latest JUnit.
  *
+ * Episode 39:
+ * 1 don't change widget's properties such as setHint until it's ready, ie, use onCreate event
+ * 2 use MainActivity.kt 's onStart, and working with Android lifecycles: https://developer.android.com/guide/components/activities/activity-lifecycle
+ * 3 Learned how to use findViewById (R.id.editTextText). Widget IDs are stored in res/layout/activity_main.xml, R.id.<widget ID as set in XML file>
+ *     Q: R.id??? How does that magic work?
+ *
+ * Episode 40:
+ * 1 Can override functions in Final classes by using extension: https://stackoverflow.com/questions/45254766/kotlin-extension-for-final-class
+ * 2 Can instantiate MainActivity via Roboelectric, but calling some methods will
+ * throw exceptions.
+ * 3 Can have static class members using "companion object" pattern: https://medium.com/@waqarul/kotlin-static-member-fields-and-singletons-b79fd65aaf9b
  */
 
 //@RunWith(RobolectricTestRunner::class)
@@ -109,16 +121,20 @@ class SSNTextWatcherTest {
 
     private lateinit var watcher : SSNTextWatcher
     private lateinit var textBox : MySpannableStringBuilder
+    private lateinit var mockSSNField : MockSSNField
 
     @Before
     fun initializeWatcherAndTextBox(){
-        watcher =  SSNTextWatcher()
+        mockSSNField = MockSSNField()
+        watcher =  SSNTextWatcher(mockSSNField)
         textBox = MySpannableStringBuilder()
+
+        assertEquals(false, watcher.textWatcherActionState.getSkipOnTextChanged())
     }
 
     @Test
-    fun instantiateTheClass_initialStateIsNoDash() {
-        assertEquals(false, watcher.textWatcherActionState.getSkipOnTextChanged())
+    fun mask_correctFormat(){
+        assertEquals("xxx-xx-xxx", SSNTextWatcher.mask)
     }
 
     @Test
@@ -179,8 +195,11 @@ class SSNTextWatcherTest {
                 super.setSkipOnTextChanged(state)
             }
         }
-        watcher = SSNTextWatcher(actionState007)
+        watcher = SSNTextWatcher(MockSSNField(), actionState007)
+        assertEquals("",  actionState007.addingDashRecorder )
+
         textBox.append("123")
+        assertEquals("",  actionState007.addingDashRecorder )
 
         // Act
         watcher.onTextChanged(textBox, 2, 0, 1)
@@ -198,7 +217,7 @@ class SSNTextWatcherTest {
             }
         }
 
-        val watcher = SSNTextWatcher(actionState007)
+        val watcher = SSNTextWatcher(MockSSNField(), actionState007)
         textBox.append("123-")
         watcher.afterTextChanged(textBox)
 
@@ -316,7 +335,7 @@ class SSNTextWatcherTest {
             }
         }
 
-        watcher = SSNTextWatcher(booleanSpy007)
+        watcher = SSNTextWatcher(MockSSNField(), booleanSpy007)
 
         textBox.append("123-45-")
         watcher.afterTextChanged(textBox)
@@ -330,4 +349,12 @@ class SSNTextWatcherTest {
         assertEquals("123-4", textBox.toString())
         assertEquals("truefalse",booleanSpy007.dashRecorder)
     }
+
+    class MockSSNField constructor() : SSNFieldInterface {
+        var ssnNumber : String = ""
+        override fun setHint2(ssnNumber: String) {
+            this.ssnNumber = ssnNumber
+        }
+     }
+
 }
