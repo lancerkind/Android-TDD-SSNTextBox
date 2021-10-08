@@ -2,7 +2,7 @@ package mywidgets
 import android.text.Editable
 import android.text.TextWatcher
 
-class SSNTextWatcher(val ssnField: SSNFieldInterface, var textWatcherActionState: TextWatcherActionState = TextWatcherActionState())  : TextWatcher  {
+class SSNTextWatcher(/*val ssnField: SSNFieldInterface,*/ var textWatcherActionState: TextWatcherActionState = TextWatcherActionState())  : TextWatcher  {
 
     companion object {
         const val mask = "xxx-xx-xxx"

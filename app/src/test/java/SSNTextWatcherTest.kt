@@ -133,12 +133,10 @@ class SSNTextWatcherTest {
 
     private lateinit var watcher : SSNTextWatcher
     private lateinit var textBox : MySpannableStringBuilder
-    private lateinit var mockSSNField : MockSSNField
 
     @Before
     fun initializeWatcherAndTextBox(){
-        mockSSNField = MockSSNField()
-        watcher =  SSNTextWatcher(mockSSNField)
+        watcher =  SSNTextWatcher(/*mockSSNField*/)
         textBox = MySpannableStringBuilder()
 
         assertEquals(false, watcher.textWatcherActionState.getSkipOnTextChanged())
@@ -207,7 +205,7 @@ class SSNTextWatcherTest {
                 super.setSkipOnTextChanged(state)
             }
         }
-        watcher = SSNTextWatcher(MockSSNField(), actionState007)
+        watcher = SSNTextWatcher(/*MockSSNField(),*/ actionState007)
         assertEquals("",  actionState007.addingDashRecorder )
 
         textBox.append("123")
@@ -229,7 +227,7 @@ class SSNTextWatcherTest {
             }
         }
 
-        val watcher = SSNTextWatcher(MockSSNField(), actionState007)
+        val watcher = SSNTextWatcher(/*MockSSNField(),*/ actionState007)
         textBox.append("123-")
         watcher.afterTextChanged(textBox)
 
@@ -347,7 +345,7 @@ class SSNTextWatcherTest {
             }
         }
 
-        watcher = SSNTextWatcher(MockSSNField(), booleanSpy007)
+        watcher = SSNTextWatcher(/*MockSSNField(),*/ booleanSpy007)
 
         textBox.append("123-45-")
         watcher.afterTextChanged(textBox)
@@ -402,10 +400,4 @@ class SSNTextWatcherTest {
         public var myProperty : String = ""
     }
 
-    class MockSSNField constructor() : SSNFieldInterface {
-        var ssnNumber : String = ""
-        override fun setHint2(ssnNumber: String) {
-            this.ssnNumber = ssnNumber
-        }
-     }
 }

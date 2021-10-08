@@ -7,8 +7,6 @@ class MaskSetter {
     fun setMask(propertyReference : (CharSequence) -> Unit, mask: String) {
         propertyReference(mask)
     }
-
-
     /*
     // Other ways we could have done the above.
     fun setMask(propertyReference: () -> KMutableProperty0<CharSequence>, mask: String) {

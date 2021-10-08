@@ -66,39 +66,11 @@ class MainActivity : AppCompatActivity() {
     SSNField.
      */
 
-
-    /*
-    How to change createMask into something like the following:
-    createMask(function, mask : String){
-        function = mask
-    }
-
-    caller:
-    foo (){
-        createMask((){
-            val ssnField : mywidgets.SSNField = findViewById (R.id.editTextText)
-            return ssnField.hint
-        }
-    }
-     */
-
-/*
-    fun createMask(mask : String){
-        // @+id/editTextText
-        val ssnField : mywidgets.SSNField = findViewById (R.id.editTextText)
-        //ssnField.hint = mask
-        ssnField.setHint(mask)
-    }
-*/
-    fun createMask(block: () -> KMutableProperty0<String>, mask : String){}
-
-
     // MainActivity.OnStart-> ssnField.setHint()->MaskSetter
     override fun onStart() {
         super.onStart()
         // @+id/editTextText
         val ssnField : mywidgets.SSNField = findViewById (R.id.editTextText)
         ssnField.setMask()
-        // createMask(SSNTextWatcher.mask)
     }
 }
