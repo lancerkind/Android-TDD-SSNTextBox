@@ -10,6 +10,8 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import android.view.Menu
 import android.view.MenuItem
 import com.example.texteditbasicactivity.databinding.ActivityMainBinding
+import mywidgets.SSNTextWatcher
+import kotlin.reflect.KMutableProperty0
 
 class MainActivity : AppCompatActivity() {
 
@@ -54,5 +56,21 @@ class MainActivity : AppCompatActivity() {
         val navController = findNavController(R.id.nav_host_fragment_content_main)
         return navController.navigateUp(appBarConfiguration)
                 || super.onSupportNavigateUp()
+    }
+
+    /*
+    function not unit testable due to this.findViewById, SSNField
+    SSNField is a view object which requires a context to instantiate.
+
+    Although we could use "extension" to override findViewById, we still have the problem with
+    SSNField.
+     */
+
+    // MainActivity.OnStart-> ssnField.setHint()->MaskSetter
+    override fun onStart() {
+        super.onStart()
+        // @+id/editTextText
+        val ssnField : mywidgets.SSNField = findViewById (R.id.editTextText)
+        ssnField.setMask()
     }
 }
