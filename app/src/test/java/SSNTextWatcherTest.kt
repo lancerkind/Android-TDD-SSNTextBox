@@ -7,9 +7,7 @@ import org.junit.Test
 import org.junit.Assert.*
 import mywidgets.*
 import org.junit.Before
-import org.junit.Ignore
-import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
+import kotlin.reflect.KMutableProperty0
 
 
 /**
@@ -88,6 +86,20 @@ import org.robolectric.RobolectricTestRunner
  * 2 Can instantiate MainActivity via Roboelectric, but calling some methods will
  * throw exceptions.
  * 3 Can have static class members using "companion object" pattern: https://medium.com/@waqarul/kotlin-static-member-fields-and-singletons-b79fd65aaf9b
+ *
+ * Episode 41:
+ * 1 functional and reflection programming in kotlin to test an algorithim in
+ * order to avoid untestable objects (view and AndroidCompat). https://stackoverflow.com/questions/69326501/how-to-use-kotlin-functional-programming-to-access-a-property
+ * 2 When calling a method that takes a closure, don't do this: aFunc(foo.property)
+ * Instead do aFunc(foo::property)!! Otherwise you invoke the function/property and end up
+ * working with the return type.
+ * 3 When working with a parameter that references a closure, don't forget to dereference the closure:
+ * aFunc(block: ()->(CharSequence) -> Unit){
+ *  block.property <-- NO! Don't do this!
+ *  block().property <-- YES!
+ *  }
+ *  4 question I still have: is it improtant to pass the closure or pass the function?
+ *
  */
 
 //@RunWith(RobolectricTestRunner::class)
@@ -350,11 +362,50 @@ class SSNTextWatcherTest {
         assertEquals("truefalse",booleanSpy007.dashRecorder)
     }
 
+    @Test
+    fun learn_reflectionWayToMutateProperties(){
+        // arrange
+        var mutablePropertyHere = WithMutableProperty()
+        val mask : String = "xxx-xx-xxx"
+        val myProperty = mutablePropertyHere::myProperty
+        assertEquals("", myProperty.get())
+
+        // act
+        createMaskReflection(mask, block = myProperty)
+
+        // assert
+       assertEquals( mask, mutablePropertyHere.myProperty )
+    }
+
+
+    // You can @AgileThoughts1 <- tweet me here
+    @Test
+    fun learn_functionalWayToMutateProperties() {
+        // arrange
+        var mutablePropertyHere = WithMutableProperty()
+        val mask : String = "xxx-xx-xxx"
+
+        // act
+        createMaskFunctional(mask, {mutablePropertyHere::myProperty })
+
+        assertEquals(mask, mutablePropertyHere.myProperty)
+    }
+
+    fun createMaskReflection(mask : String, block: KMutableProperty0<String>) {
+        block.set(mask)
+    }
+    fun createMaskFunctional(mask : String, block: () -> KMutableProperty0<String>) {
+       block().set(mask)
+    }
+
+    class WithMutableProperty {
+        public var myProperty : String = ""
+    }
+
     class MockSSNField constructor() : SSNFieldInterface {
         var ssnNumber : String = ""
         override fun setHint2(ssnNumber: String) {
             this.ssnNumber = ssnNumber
         }
      }
-
 }
