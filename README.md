@@ -10,6 +10,8 @@ You can find the videos at these locations:
 * https://www.twitch.tv/tddacademy
 * https://m.youtube.com/channel/UCU1U6oPscxzKd_IWAIOm60w
 
+Note: if you are a regular view of the show, all the code has been merged to Master branch. The other braches will soon be removed.
+
 
 # Organization
 Typically, each checkin represents an episode.
