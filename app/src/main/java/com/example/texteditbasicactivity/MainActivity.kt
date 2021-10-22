@@ -1,6 +1,10 @@
 package com.example.texteditbasicactivity
 
+import android.graphics.Color
 import android.os.Bundle
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.style.ForegroundColorSpan
 import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
@@ -9,6 +13,7 @@ import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.TextView
 import com.example.texteditbasicactivity.databinding.ActivityMainBinding
 import mywidgets.SSNTextWatcher
 import kotlin.reflect.KMutableProperty0
@@ -72,5 +77,36 @@ class MainActivity : AppCompatActivity() {
         // @+id/editTextText
         val ssnField : mywidgets.SSNField = findViewById (R.id.editTextText)
         ssnField.setMask()
+       // learnToSetColors()
+       // learnToMoveCursor()
+    }
+
+    fun learnToMoveCursor() {
+        var textView: mywidgets.SSNField = findViewById(R.id.editTextText)
+        textView.setSelection(5)
+    }
+
+    fun learnToSetColors(){
+        var textView: mywidgets.SSNField = findViewById(R.id.editTextText)
+        val WordtoSpan: Spannable = SpannableString("partial colored text")
+        WordtoSpan.setSpan(
+            ForegroundColorSpan(Color.LTGRAY),
+            2,
+            4,
+            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
+
+        textView.setText(WordtoSpan)
+        val result  = if (textView.currentTextColor == Color.LTGRAY) "Y" else "N"
+
+        // textView.
+        // how to find the color to the right of the cursor position.
+
+        println("Current color is red $result")
+        textView.setSelection(0)
+        println("Black is ${Color.BLACK} but the color at position 0 is ${textView.currentTextColor}")
+        textView.setSelection(3)
+        println("LTGrey is ${Color.LTGRAY} but the color at position 3 is ${textView.currentTextColor}")
+
     }
 }
