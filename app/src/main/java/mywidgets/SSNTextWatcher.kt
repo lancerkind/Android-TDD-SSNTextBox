@@ -9,15 +9,15 @@ import android.text.*
 
 class SSNTextWatcher(
     private var ssnFieldAccess: SSNFieldAccess,
-    var textWatcherActionState: TextWatcherActionState = TextWatcherActionState()
+    var reentryGuard: TextWatcherActionState = TextWatcherActionState()
 ) : TextWatcher {
 
-    private val whatUserEntered: StringBuilder = StringBuilder()
-    private var mask : StringBuilder = StringBuilder()
-    private var userCursor : Int = 0
+    private var mask: StringBuilder = StringBuilder(initialMask)
+    private var userCursor: Int = 0
+    private val masker = Masker()
 
     companion object {
-        const val mask = "xxx-xx-xxx"
+        const val initialMask = "xxx-xx-xxx"
     }
 
     fun setSelection(position: Int) {
@@ -37,46 +37,31 @@ class SSNTextWatcher(
         numberOfCharactersToReplace: Int,
         countOfCharactersAdded: Int
     ) {
-        if (textWatcherActionState.appIsAddingAMask()) return
+        if (reentryGuard.appIsAddingAMask()) return
 
-        if(countOfCharactersAdded > 0) this.userCursor += countOfCharactersAdded
+        if (countOfCharactersAdded > 0) this.userCursor += countOfCharactersAdded
         //CharSequence s, int start, int count, int after
         println("beforeTextChanged: charactersInTextEdit " + charactersInTextEdit + " cursorPosition " + cursorPosition + "numberOfCharactersToReplace " + numberOfCharactersToReplace + " countOfCharactersAdded " + countOfCharactersAdded)
     }
 
     // The below is an interface from TextWatcher
-    override fun afterTextChanged(characters: Editable?) {
-        println("afterTextChanged: characters " + characters)
-        println("OUR VALUE " + characters!!.length)
+    override fun afterTextChanged(charactersInGUI: Editable?) {
+        println("afterTextChanged: characters " + charactersInGUI)
+        if (reentryGuard.appIsAddingAMask()) return
 
-        if (textWatcherActionState.appIsAddingAMask()) return
-
-        whatUserEntered.append(characters.toString()) // will not work as mask is in here too.
-        computeMask(characters)
-        safelyAppendMaskOntoEnd(characters)
+        mask = StringBuilder(masker.computeMask(mask.toString()))
+        println("afterTextChanged, new mask is computed to be: ${mask.toString()}")
+        safelyAppendMaskOnToEnd(charactersInGUI!!)
         ssnFieldAccess.setSelectionOfTextEdit(userCursor)
-        /*         ssnFieldAccess.setSelectionOfTextEdit(1)
-                 if(ssnFieldAccess.getSelectionEndOfTextEdit() == 1) println("selection location is 1")
-                 else println("selection location is NOT 1")
-
-         */
     }
 
-    private fun computeMask(characters: Editable) {
-
-        if (characters.length > 1) {
-            mask = StringBuilder("x-xx-xxx")
-            println("current color: ${ssnFieldAccess.getCurrentColorOfTextEdit()}")
-        } else {
-            mask = StringBuilder("xx-xx-xxx")
-        }
-
-    }
-
-    private fun safelyAppendMaskOntoEnd(characters: Editable) {
-        textWatcherActionState.setAppIsAddingAMask(true)
-        characters.append(mask)
-        textWatcherActionState.setAppIsAddingAMask(false)
+    private fun safelyAppendMaskOnToEnd(characters: Editable) {
+        reentryGuard.setAppIsAddingAMask(true)
+        val ssnFieldLength = 10
+        val userTextEndPosition = ssnFieldLength - mask.length
+        characters.delete(userTextEndPosition,characters.length)
+        characters.insert(userTextEndPosition, mask)
+        reentryGuard.setAppIsAddingAMask(false)
     }
 
     // TextWatcher interfacing
@@ -90,13 +75,8 @@ class SSNTextWatcher(
     }
 
     // Test drive the interface calls below.
-    // Todo: need to put cursor back where it belongs.
     fun getColor(i: Int): Int {
-/*        ssnFieldAccess.setSelection2(3)
-        return ssnFieldAccess.getColorAtPosition(3)
-
-*/
-        return -1
+        return ssnFieldAccess.getCurrentColorOfTextEdit(3)
     }
 
     /**

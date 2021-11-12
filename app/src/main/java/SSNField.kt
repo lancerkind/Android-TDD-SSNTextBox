@@ -1,20 +1,23 @@
 package mywidgets
 import android.content.Context
-import android.graphics.Color
+import android.text.SpannableString
 import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatEditText
 
 // I had to add the class construct due to demands from the compiler
 class SSNField(context: Context, attrs: AttributeSet?) : AppCompatEditText(context, attrs), SSNFieldAccess {
-    val watcher = SSNTextWatcher(this, SSNTextWatcher.TextWatcherActionState())
-    val maskSetter = MaskSetter()
+    private val watcher = SSNTextWatcher(this, SSNTextWatcher.TextWatcherActionState())
+    private val maskSetter = MaskSetter()
 
     override fun setSelectionOfTextEdit(position: Int) {this.setSelection(position)}
-    override fun getSelectionEndOfTextEdit() : Int { return this.selectionEnd
+    override fun getSelectionEndOfTextEdit() : Int { return this.selectionEnd    }
+
+    override fun getSpannable(): SpannableString {
+        TODO("Not yet implemented")
     }
 
-    override fun getCurrentColorOfTextEdit(): Int {
-        return currentTextColor
+    override fun getCurrentColorOfTextEdit(position: Int): Int {
+        TODO("Not yet implemented")
     }
 
     init {
@@ -26,6 +29,6 @@ class SSNField(context: Context, attrs: AttributeSet?) : AppCompatEditText(conte
         // setHint to use (there are mare than one).
         val hintPropertyReference : (CharSequence) -> Unit = this::setHint
 
-        maskSetter.setMask(hintPropertyReference, SSNTextWatcher.mask)
+        maskSetter.setMask(hintPropertyReference, SSNTextWatcher.initialMask)
     }
 }

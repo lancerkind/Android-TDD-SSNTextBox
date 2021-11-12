@@ -1,7 +1,6 @@
 package com.example.texteditbasicactivity
 
-import android.graphics.Color
-import android.text.SpannableStringBuilder
+import android.text.SpannableString
 import org.junit.Test
 //import org.junit.jupiter.api.Test
 
@@ -9,6 +8,7 @@ import org.junit.Assert.*
 import mywidgets.*
 import org.junit.Before
 import org.junit.Ignore
+import test.library.MySpannableStringBuilder
 import kotlin.reflect.KMutableProperty0
 
 /**
@@ -120,37 +120,24 @@ import kotlin.reflect.KMutableProperty0
  *  2 Learned how to hit the tiny post button in linked in so I can chat with all my fans.
  *  2.5 Possible new class to add: data structure for mask and "add" or "delete" is all we need.
  *  3 cursor position in the text watcher API represents where the cursor was when the user entered data.
+ *
+ *  Episode 45:
+ *  1 Editable.append API is goofy! editable.append(thing, start, end) <- start and end are for *thing*.
+ *  editable.insert(position, thing, start, end) <- position is where in editable to append
+ *  2 When test don't compile, you can find what the problem is by the doing the following:
+ *      A) run the unit tests
+ *      B) click on problems.
+ *  3 Add classes like you're paid by the class, even if it hurts your brain. Because, your
+ *    brain is wrong and if you're going to transcend your limitations, you can't trust your brain.
+ *
+ *  Episode 46:
+ *  1 Next show: we need to solve who handles: given: "1234xx-xxx" then: "123-4x-xxx"
+ *  - ideas: masker handle it?, create a class to handle "dash work"?, embed in SSNTextWatcher (the unit testable class but a little difficult due to all the mock objects)
+ *  0
  */
 
 //@RunWith(RobolectricTestRunner::class)
 class SSNTextWatcherTest {
-
-   class MySpannableStringBuilder : SpannableStringBuilder() {
-        private var buffer = StringBuffer()
-
-        override val length: Int
-            get() = buffer.length
-
-        override fun delete(start: Int, end: Int): SpannableStringBuilder {
-            buffer.delete(start, end)
-            return this
-        }
-
-        override fun append(text: CharSequence): SpannableStringBuilder {
-            buffer.append(text)
-            return this
-        }
-
-        override fun append(text: Char): SpannableStringBuilder {
-            buffer.append(text)
-            return this
-        }
-
-        override fun toString(): String {
-            return buffer.toString()
-        }
-    }
-
     private lateinit var watcher : SSNTextWatcher
     private lateinit var textBox : MySpannableStringBuilder
 
@@ -167,8 +154,12 @@ class SSNTextWatcherTest {
             else {selectionPosition}
         }
 
-        override fun getCurrentColorOfTextEdit(): Int {
-            return -1
+        override fun getSpannable(): SpannableString {
+            TODO("Not yet implemented")
+        }
+
+        override fun getCurrentColorOfTextEdit(position: Int): Int {
+            TODO("Not yet implemented")
         }
     }
 
@@ -177,13 +168,12 @@ class SSNTextWatcherTest {
         textBox = MySpannableStringBuilder()
         watcher =  SSNTextWatcher(SSNFieldMock(textBox) )
 
-        assertEquals(false, watcher.textWatcherActionState.appIsAddingAMask())
+        assertEquals(false, watcher.reentryGuard.appIsAddingAMask())
     }
 
     @Test
     fun mask_correctFormat(){
-        val position = 0;
-        assertEquals("xxx-xx-xxx", SSNTextWatcher.mask)
+        assertEquals("xxx-xx-xxx", SSNTextWatcher.initialMask)
     }
 
     @Test
@@ -216,7 +206,7 @@ class SSNTextWatcherTest {
         // Arrange
         val spy007 = Spy()
         watcher = SSNTextWatcher( SSNFieldMock(textBox), spy007)
-        textBox.append("1")  // user enters 1
+        userTypesOnPhone("1")
         watcher.beforeTextChanged(textBox,0,0,1)
 
         // Act
@@ -225,7 +215,7 @@ class SSNTextWatcherTest {
         // Assert
         assertBooleanStateCorrect(spy007)
         assertMaskCorrect("1xx-xx-xxx", textBox)
-        assertEquals(1, watcher.getSelectionEnd())
+        assertEquals(1, positionOfInsertionPoint())
     }
 
     /**
@@ -269,25 +259,38 @@ class SSNTextWatcherTest {
      * Because the mask characters are constant throughout, and the user input is not,
      * I can shrink and grow the mask and assume everything outside the mask is
      * user entry.
+     *
+     *
      */
 
     @Test
-    fun afterTextChanged_userentersTwoDigits(){
+    fun afterTextChanged_userEntersTwoDigits(){
         // Arrange
-        textBox.append("12")
-        watcher.beforeTextChanged(textBox,0,0,2)
+        userTypesOnPhone("1")
 
-        // Act
+        watcher.beforeTextChanged(textBox,0,0,1)
         watcher.afterTextChanged(textBox)
+        assertMaskCorrect("1xx-xx-xxx", textBox)
+        assertEquals(1, positionOfInsertionPoint())
 
-        // Assert
+        userTypesOnPhone("2",1)
+        assertEquals("12xx-xx-xxx",textBox.toString()) // extra X until text watcher events clean up the mask
+
+        watcher.beforeTextChanged(textBox,1,0,1)
+        watcher.afterTextChanged(textBox)
         assertMaskCorrect("12x-xx-xxx", textBox)
-        assertEquals(2, watcher.getSelectionEnd())
-        //assertEquals(Color.LTGRAY, watcher.getColor(2))
+        assertEquals(2, positionOfInsertionPoint())
+
+/*        assertEquals(Color.BLACK, watcher.getColor(0))
+        assertEquals(Color.LTGRAY, watcher.getColor(2))
+ */
     }
 
-    private fun assertMaskCorrect(expectedMask: String, textBox: MySpannableStringBuilder) {
-        assertEquals(expectedMask, textBox.toString())
+    // Probably refector my interface to the below.
+    private fun positionOfInsertionPoint() = watcher.getSelectionEnd()
+
+    private fun assertMaskCorrect(expectedTextInTextBox: String, textBox: MySpannableStringBuilder) {
+        assertEquals(expectedTextInTextBox, textBox.toString())
     }
 
     private fun assertBooleanStateCorrect(spy:Spy ) {
@@ -297,7 +300,7 @@ class SSNTextWatcherTest {
     @Ignore
     @Test
     fun afterTextChanged_maskIsFaded(){
-        textBox.append("1")
+        userTypesOnPhone("1")
         watcher.afterTextChanged(textBox)
      //   assertEquals(textBox.get())
     }
@@ -322,7 +325,7 @@ class SSNTextWatcherTest {
     @Test
     fun onTextChanged_userAddsFirstNumber_appAddsMask() {
         // Arrange
-        textBox.append("1")
+        userTypesOnPhone("1")
 
 
         // Act
@@ -331,6 +334,28 @@ class SSNTextWatcherTest {
         // Assert
 
         //assertEquals("1xx-xx-xxx", textBox.toString())
+    }
+
+    private fun userTypesOnPhone(text : String) {
+        userTypesOnPhone(text, 0)
+    }
+
+    private fun userTypesOnPhone(text : String, insertionPoint: Int) {
+        textBox.insert(insertionPoint, text)
+    }
+
+
+    @Test
+    fun learn_howAppendWorks(){
+        assertEquals("", textBox.toString())
+        textBox.append("1",0,1)
+        assertEquals("1", textBox.toString())
+
+        textBox.append("2",0,1)
+        assertEquals("12", textBox.toString())
+
+        textBox.append("3",0,1)
+        assertEquals("123", textBox.toString())
     }
 
     @Ignore
@@ -343,7 +368,7 @@ class SSNTextWatcherTest {
         watcher.onTextChanged(textBox, 1, 0, 1)
 
         // Assert
-        assertEquals(false, watcher.textWatcherActionState.appIsAddingAMask())
+        assertEquals(false, watcher.reentryGuard.appIsAddingAMask())
     }
     @Ignore
     @Test

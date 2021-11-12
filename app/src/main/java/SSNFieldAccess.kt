@@ -1,5 +1,7 @@
 package mywidgets
 
+import android.text.SpannableString
+
 
 /**
 * Since this interface is implemented by a View, each method needs to be
@@ -10,5 +12,8 @@ package mywidgets
 interface SSNFieldAccess {
     fun setSelectionOfTextEdit(position: Int)
     fun getSelectionEndOfTextEdit() : Int
-    fun getCurrentColorOfTextEdit(): Int
+    fun getSpannable() : SpannableString
+
+    // The below can be gotten rid of
+    fun getCurrentColorOfTextEdit(position: Int): Int
 }
