@@ -134,6 +134,9 @@ import kotlin.reflect.KMutableProperty0
  *  1 Next show: we need to solve who handles: given: "1234xx-xxx" then: "123-4x-xxx"
  *  - ideas: masker handle it?, create a class to handle "dash work"?, embed in SSNTextWatcher (the unit testable class but a little difficult due to all the mock objects)
  *  0
+ *
+ *  Episode 47:
+ *  1 "-" != '-'  <-- characters aren't equal to strings.
  */
 
 //@RunWith(RobolectricTestRunner::class)
@@ -266,10 +269,7 @@ class SSNTextWatcherTest {
     @Test
     fun afterTextChanged_userEntersTwoDigits(){
         // Arrange
-        userTypesOnPhone("1")
-
-        watcher.beforeTextChanged(textBox,0,0,1)
-        watcher.afterTextChanged(textBox)
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled('1',0)
         assertMaskCorrect("1xx-xx-xxx", textBox)
         assertEquals(1, positionOfInsertionPoint())
 
@@ -286,7 +286,51 @@ class SSNTextWatcherTest {
  */
     }
 
-    // Probably refector my interface to the below.
+    @Test
+    fun afterTextChanged_userEntersThirdDigitAndCursorJumpsPastDash(){
+        // Arrange
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled('1',0)
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled('2',1)
+
+        userTypesOnPhone("3", 2)
+        assertEquals("123x-xx-xxx", textBox.toString())
+
+        // Act
+        watcher.beforeTextChanged(textBox,2,0,1)
+        watcher.afterTextChanged(textBox)
+
+        // Assert
+        assertMaskCorrect("123-xx-xxx", textBox)
+        assertEquals(4, positionOfInsertionPoint())
+    }
+
+    @Test
+    fun userInputsEntireSSN(){
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled('1',0)
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled('2',1)
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled('3',2)
+        // dash is position 3
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled('4',4)
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled('5',5)
+        // dash is position 6
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled('6', 7)
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled('7',8)
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled('8', 9)
+    }
+
+    private fun userTypesOnPhoneAndThenTextWatcherEventsAreCalled(userInput: Char, cursorPosition: Int) {
+        userTypesOnPhone(userInput.toString(), cursorPosition)
+
+        watcher.beforeTextChanged(textBox, cursorPosition,0, 1)
+        watcher.afterTextChanged(textBox)
+    }
+
+    @Test
+    fun learn_equalsAndDash(){
+        val ssn = "123-xx-xxx"
+        assertTrue(ssn.get(3).equals('-'))
+    }
+    // Probably refactor my interface to the below.
     private fun positionOfInsertionPoint() = watcher.getSelectionEnd()
 
     private fun assertMaskCorrect(expectedTextInTextBox: String, textBox: MySpannableStringBuilder) {
@@ -414,52 +458,6 @@ class SSNTextWatcherTest {
         assertEquals("123-",  textBox.toString())
     }
 
-
-    @Ignore
-    @Test
-    fun onTextChanged_userDeletesTheDash_phoneDeletesCharacterBeforeDash() {
-        // Arrange
-        textBox.append("123")
-        //phone adds dash
-        watcher.afterTextChanged(textBox)
-        watcher.onTextChanged(textBox, 2, 0, 1)
-        assertEquals("123-", textBox.toString())
-
-        // Act
-        textBox.delete(3, 4)  // user deletes dash
-        assertEquals("123", watcher.ssnNumber.toString()) // dash deleted on phone
-        watcher.onTextChanged(textBox, 3, 1, 0)
-        watcher.afterTextChanged(textBox)
-
-        //assert
-        assertEquals("12", watcher.ssnNumber.toString())
-    }
-    @Ignore
-    @Test
-    fun onTextChanged_userDeletesTheDash_phoneDeletesCharacterBeforeDash_userAddsNumberSoDashAddedAgain() {
-        // Arrange
-        textBox.append("123")
-        //phone adds dash
-        watcher.afterTextChanged(textBox)
-        watcher.onTextChanged(textBox, 2, 0, 1)
-        assertEquals("123-", textBox.toString())
-
-        textBox.delete(3, 4)  // user deletes dash
-        assertEquals("123", watcher.ssnNumber.toString()) // dash deleted on phone
-        watcher.onTextChanged(textBox, 3, 1, 0)
-        watcher.afterTextChanged(textBox)
-
-        assertEquals("12", watcher.ssnNumber.toString())
-        textBox.append("3") // user adds number
-
-        // Act
-        watcher.onTextChanged(textBox, 2, 0, 1)
-        watcher.afterTextChanged(textBox)
-
-        //assert
-        assertEquals("123-", watcher.ssnNumber.toString())
-    }
-
     @Test
     fun learn_howToUsedelete() {
         textBox.append("123-")
@@ -470,20 +468,6 @@ class SSNTextWatcherTest {
         assertEquals("12", textBox.toString())
     }
 
-    @Ignore
-    @Test
-    fun onTextChanged_wontRecurseWhenUserDeletesDash() {
-        // Arrange
-        textBox.append("123-")
-        watcher.afterTextChanged(textBox)
-        textBox.delete(3,4) // user deletes dash
-
-        // Act
-        watcher.onTextChanged(textBox, 3, 1, 0)
-
-        // Assert
-        assertEquals("12", watcher.ssnNumber.toString())
-    }
     @Ignore
     @Test
     fun onTextChanged_userAdds4thDigit() {

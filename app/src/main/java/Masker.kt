@@ -1,7 +1,8 @@
 package mywidgets
 
 /**
- * What it does is: 1) xxx-xx-xxx, when user enters a digit, it computes the mask that
+ * What it does is:
+ * 1) xxx-xx-xxx, when user enters a digit, it computes the mask that
  * is appended to user input
  *     vvvvvvvvv <- masker computes
  * 2) 1xx-xx-xxx
@@ -11,7 +12,6 @@ package mywidgets
 class Masker {
 
     // Next show: do I need userInputMergedWithMask as a parameter?
-    // Do I need to use a StringBuilder when I'm not building strings?
     fun computeMask(mask: String) : String {
         var newMask =""
 

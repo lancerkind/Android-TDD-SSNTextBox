@@ -8,6 +8,10 @@ class MySpannableStringBuilder : SpannableStringBuilder() {
     override val length: Int
         get() = buffer.length
 
+    override fun get(position: Int): Char {
+        return buffer.get(position)
+    }
+
     override fun delete(start: Int, end: Int): SpannableStringBuilder {
         buffer.delete(start, end)
         return this

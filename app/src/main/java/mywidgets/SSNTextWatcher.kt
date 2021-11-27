@@ -11,7 +11,6 @@ class SSNTextWatcher(
     private var ssnFieldAccess: SSNFieldAccess,
     var reentryGuard: TextWatcherActionState = TextWatcherActionState()
 ) : TextWatcher {
-
     private var mask: StringBuilder = StringBuilder(initialMask)
     private var userCursor: Int = 0
     private val masker = Masker()
@@ -28,8 +27,6 @@ class SSNTextWatcher(
         return ssnFieldAccess.getSelectionEndOfTextEdit()
     }
 
-    var ssnNumber: Editable? = null
-
     // TextWatcher interfacing https://developer.android.com/reference/android/text/TextWatcher
     override fun beforeTextChanged(
         charactersInTextEdit: CharSequence?,
@@ -38,13 +35,14 @@ class SSNTextWatcher(
         countOfCharactersAdded: Int
     ) {
         if (reentryGuard.appIsAddingAMask()) return
-
         if (countOfCharactersAdded > 0) this.userCursor += countOfCharactersAdded
-        //CharSequence s, int start, int count, int after
         println("beforeTextChanged: charactersInTextEdit " + charactersInTextEdit + " cursorPosition " + cursorPosition + "numberOfCharactersToReplace " + numberOfCharactersToReplace + " countOfCharactersAdded " + countOfCharactersAdded)
     }
 
     // The below is an interface from TextWatcher
+    /*
+    * The below overwrites the mask but skips dashes.
+    */
     override fun afterTextChanged(charactersInGUI: Editable?) {
         println("afterTextChanged: characters " + charactersInGUI)
         if (reentryGuard.appIsAddingAMask()) return
@@ -52,7 +50,20 @@ class SSNTextWatcher(
         mask = StringBuilder(masker.computeMask(mask.toString()))
         println("afterTextChanged, new mask is computed to be: ${mask.toString()}")
         safelyAppendMaskOnToEnd(charactersInGUI!!)
-        ssnFieldAccess.setSelectionOfTextEdit(userCursor)
+
+        // And notice in beforeTextChanged, I'm not using the cursor parameter.  Shouldn't I?
+        if(isInsertionPointNextToDash(charactersInGUI)) {
+            userCursor ++
+            ssnFieldAccess.setSelectionOfTextEdit(userCursor)
+        } else {
+            ssnFieldAccess.setSelectionOfTextEdit(userCursor)
+        }
+    }
+
+    private fun isInsertionPointNextToDash(charactersInGUI: Editable): Boolean {
+        if(charactersInGUI.length == 1) return false  // Case happens during initial GUI render
+        if(charactersInGUI.get(userCursor).equals('-')) return true // 123-xx-xxx
+        return false
     }
 
     private fun safelyAppendMaskOnToEnd(characters: Editable) {
