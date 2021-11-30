@@ -23,6 +23,10 @@ class Masker {
             newMask = "-xx-xxx"
         } else if (mask.equals("-xx-xxx")){
             newMask = "x-xxx"
+        } else if(mask.equals("x-xxx")) {
+            newMask = "-xxx"
+        } else if(mask.equals("xxx")) {
+            newMask = "xx"
         }
         return newMask
     }

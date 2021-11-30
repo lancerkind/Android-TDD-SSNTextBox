@@ -17,6 +17,7 @@ class SSNTextWatcher(
 
     companion object {
         const val initialMask = "xxx-xx-xxx"
+        const val maxCharAllowed = initialMask.length
     }
 
     fun setSelection(position: Int) {
@@ -34,7 +35,7 @@ class SSNTextWatcher(
         numberOfCharactersToReplace: Int,
         countOfCharactersAdded: Int
     ) {
-        if (reentryGuard.appIsAddingAMask()) return
+        if (reentryGuard.appIsAddingAMask() || userCursor == maxCharAllowed) return
         if (countOfCharactersAdded > 0) this.userCursor += countOfCharactersAdded
         println("beforeTextChanged: charactersInTextEdit " + charactersInTextEdit + " cursorPosition " + cursorPosition + "numberOfCharactersToReplace " + numberOfCharactersToReplace + " countOfCharactersAdded " + countOfCharactersAdded)
     }
@@ -61,15 +62,14 @@ class SSNTextWatcher(
     }
 
     private fun isInsertionPointNextToDash(charactersInGUI: Editable): Boolean {
-        if(charactersInGUI.length == 1) return false  // Case happens during initial GUI render
+        if(charactersInGUI.length == 1 || userCursor == maxCharAllowed) return false  // Case happens during initial GUI render
         if(charactersInGUI.get(userCursor).equals('-')) return true // 123-xx-xxx
         return false
     }
 
     private fun safelyAppendMaskOnToEnd(characters: Editable) {
         reentryGuard.setAppIsAddingAMask(true)
-        val ssnFieldLength = 10
-        val userTextEndPosition = ssnFieldLength - mask.length
+        val userTextEndPosition = maxCharAllowed - mask.length
         characters.delete(userTextEndPosition,characters.length)
         characters.insert(userTextEndPosition, mask)
         reentryGuard.setAppIsAddingAMask(false)

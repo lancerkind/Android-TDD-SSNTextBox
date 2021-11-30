@@ -38,4 +38,14 @@ class MaskerTest {
     fun computeMask_fourthDigitDashCollision(){
         assertEquals("x-xxx", masker.computeMask("-xx-xxx"))
     }
+
+    @Test
+    fun computeMask_fifthDigitDashCollision(){
+        assertEquals("-xxx", masker.computeMask("x-xxx"))
+    }
+
+    @Test
+    fun computeMask_sixthDigitDashCollision(){
+        assertEquals("xx", masker.computeMask("xxx"))
+    }
 }

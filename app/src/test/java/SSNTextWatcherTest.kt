@@ -269,7 +269,7 @@ class SSNTextWatcherTest {
     @Test
     fun afterTextChanged_userEntersTwoDigits(){
         // Arrange
-        userTypesOnPhoneAndThenTextWatcherEventsAreCalled('1',0)
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled(0, '1')
         assertMaskCorrect("1xx-xx-xxx", textBox)
         assertEquals(1, positionOfInsertionPoint())
 
@@ -289,8 +289,8 @@ class SSNTextWatcherTest {
     @Test
     fun afterTextChanged_userEntersThirdDigitAndCursorJumpsPastDash(){
         // Arrange
-        userTypesOnPhoneAndThenTextWatcherEventsAreCalled('1',0)
-        userTypesOnPhoneAndThenTextWatcherEventsAreCalled('2',1)
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled(0, '1')
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled(1, '2')
 
         userTypesOnPhone("3", 2)
         assertEquals("123x-xx-xxx", textBox.toString())
@@ -306,22 +306,41 @@ class SSNTextWatcherTest {
 
     @Test
     fun userInputsEntireSSN(){
-        userTypesOnPhoneAndThenTextWatcherEventsAreCalled('1',0)
-        userTypesOnPhoneAndThenTextWatcherEventsAreCalled('2',1)
-        userTypesOnPhoneAndThenTextWatcherEventsAreCalled('3',2)
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled(0, '1')
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled(1, '2')
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled(2, '3')
         // dash is position 3
-        userTypesOnPhoneAndThenTextWatcherEventsAreCalled('4',4)
-        userTypesOnPhoneAndThenTextWatcherEventsAreCalled('5',5)
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled(4, '4')
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled(5, '5')
         // dash is position 6
-        userTypesOnPhoneAndThenTextWatcherEventsAreCalled('6', 7)
-        userTypesOnPhoneAndThenTextWatcherEventsAreCalled('7',8)
-        userTypesOnPhoneAndThenTextWatcherEventsAreCalled('8', 9)
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled(7, '6')
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled(8, '7')
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled(9, '8')
     }
 
-    private fun userTypesOnPhoneAndThenTextWatcherEventsAreCalled(userInput: Char, cursorPosition: Int) {
-        userTypesOnPhone(userInput.toString(), cursorPosition)
+    @Test
+    fun userInputsEntireMoreThanAllowedChars(){
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled(0, '1')
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled(1, '2')
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled(2, '3')
+        // dash is position 3
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled(4, '4')
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled(5, '5')
+        // dash is position 6
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled(7, '6')
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled(8, '7')
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled(9, '8')
+        // extra char added
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled(10, '9')
+    }
 
-        watcher.beforeTextChanged(textBox, cursorPosition,0, 1)
+    private fun userTypesOnPhoneAndThenTextWatcherEventsAreCalled(
+        cursorPositionBeforeUserInput: Int,
+        userInput: Char
+    ) {
+        userTypesOnPhone(userInput.toString(), cursorPositionBeforeUserInput)
+
+        watcher.beforeTextChanged(textBox, cursorPositionBeforeUserInput,0, 1)
         watcher.afterTextChanged(textBox)
     }
 
@@ -365,20 +384,6 @@ class SSNTextWatcherTest {
         textView.setText(WordtoSpan)
     }
 */
-    @Ignore
-    @Test
-    fun onTextChanged_userAddsFirstNumber_appAddsMask() {
-        // Arrange
-        userTypesOnPhone("1")
-
-
-        // Act
-        watcher.afterTextChanged(textBox)
-
-        // Assert
-
-        //assertEquals("1xx-xx-xxx", textBox.toString())
-    }
 
     private fun userTypesOnPhone(text : String) {
         userTypesOnPhone(text, 0)
@@ -402,41 +407,6 @@ class SSNTextWatcherTest {
         assertEquals("123", textBox.toString())
     }
 
-    @Ignore
-    @Test
-    fun onTextChanged_addingDashIsFalseForSecondNumber() {
-        // Arrange
-        textBox.append("12")
-
-        // Act
-        watcher.onTextChanged(textBox, 1, 0, 1)
-
-        // Assert
-        assertEquals(false, watcher.reentryGuard.appIsAddingAMask())
-    }
-    @Ignore
-    @Test
-    fun onTextChanged_addingDashIsTrueForThirdNumber() {
-        // Arrange
-        val actionState007 = object: SSNTextWatcher.TextWatcherActionState(){
-            var addingDashRecorder  = ""
-            override fun setAppIsAddingAMask(state: Boolean) {
-                addingDashRecorder += state.toString()
-                super.setAppIsAddingAMask(state)
-            }
-        }
-        watcher = SSNTextWatcher( SSNFieldMock(textBox), actionState007)
-        assertEquals("",  actionState007.addingDashRecorder )
-
-        textBox.append("123")
-        assertEquals("",  actionState007.addingDashRecorder )
-
-        // Act
-        watcher.onTextChanged(textBox, 2, 0, 1)
-
-        // Assert
-        assertEquals("truefalse",  actionState007.addingDashRecorder )
-    }
     @Ignore
     @Test
     fun onTextChanged_whenAddingDashDoesntRecurse() {
@@ -468,32 +438,6 @@ class SSNTextWatcherTest {
         assertEquals("12", textBox.toString())
     }
 
-    @Ignore
-    @Test
-    fun onTextChanged_userAdds4thDigit() {
-        // Arrange
-        textBox.append("123-4")
-        watcher.afterTextChanged(textBox)
-
-        // Act
-        watcher.onTextChanged(textBox,4, 0,1)
-
-        //Assert
-        assertEquals("123-4",textBox.toString())
-    }
-    @Ignore
-    @Test
-    fun onTextChanged_dashAddedWhenUserAdds5thDigit() {
-        //Arrange
-        textBox.append("123-45")
-        watcher.afterTextChanged(textBox)
-
-        //Act
-        watcher.onTextChanged(textBox,5, 0,1)
-
-        //Assert
-        assertEquals("123-45-", textBox.toString())
-    }
     @Ignore
     @Test
     fun onTextChanged_deletingSecondDashDeletesNumberToo(){
