@@ -11,23 +11,26 @@ package mywidgets
  */
 class Masker {
 
-    // Next show: do I need userInputMergedWithMask as a parameter?
-    fun computeMask(mask: String) : String {
+    fun computeMaskForInputCase(maskBeforeInput: String) : String {
         var newMask =""
 
-        if (mask.equals("xxx-xx-xxx")) { // user enters first digit, go from xxx-xx-xxx to xx-xx-xxx
+        if (maskBeforeInput.equals("xxx-xx-xxx")) { // user enters first digit, go from xxx-xx-xxx to xx-xx-xxx
             newMask = "xx-xx-xxx"
-        } else if (mask.equals("xx-xx-xxx")) { // user enters second digit, go from xx-xx-xxx to x-xx-xxx
+        } else if (maskBeforeInput.equals("xx-xx-xxx")) { // user enters second digit, go from xx-xx-xxx to x-xx-xxx
             newMask = "x-xx-xxx"
-        } else if (mask.equals("x-xx-xxx")) {
+        } else if (maskBeforeInput.equals("x-xx-xxx")) {
             newMask = "-xx-xxx"
-        } else if (mask.equals("-xx-xxx")){
+        } else if (maskBeforeInput.equals("-xx-xxx")){
             newMask = "x-xxx"
-        } else if(mask.equals("x-xxx")) {
+        } else if(maskBeforeInput.equals("x-xxx")) {
             newMask = "-xxx"
-        } else if(mask.equals("xxx")) {
+        } else if(maskBeforeInput.equals("xxx")) {
             newMask = "xx"
         }
         return newMask
+    }
+
+    fun computeMaskForDeleteCase(maskBeforeDeletion: String): String {
+         return "xxx-xx-xxx"
     }
 }

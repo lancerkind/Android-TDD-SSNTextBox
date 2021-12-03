@@ -16,7 +16,7 @@ class MaskerTest {
     @Test
     fun computeMask_firstDigitInput()    {
         // Arrange, Act, and Assert
-        assertEquals("xx-xx-xxx", masker.computeMask("xxx-xx-xxx"))
+        assertEquals("xx-xx-xxx", masker.computeMaskForInputCase("xxx-xx-xxx"))
     }
 
     @Test
@@ -25,27 +25,32 @@ class MaskerTest {
         val currentMask = "xx-xx-xxx"
 
         // Act and Assert
-        assertEquals("x-xx-xxx", masker.computeMask(currentMask))
+        assertEquals("x-xx-xxx", masker.computeMaskForInputCase(currentMask))
     }
 
     @Test
     fun computeMask_thirdDigit() {
         // Arrange, Act, and Assert
-        assertEquals("-xx-xxx", masker.computeMask("x-xx-xxx"))
+        assertEquals("-xx-xxx", masker.computeMaskForInputCase("x-xx-xxx"))
     }
 
     @Test
     fun computeMask_fourthDigitDashCollision(){
-        assertEquals("x-xxx", masker.computeMask("-xx-xxx"))
+        assertEquals("x-xxx", masker.computeMaskForInputCase("-xx-xxx"))
     }
 
     @Test
-    fun computeMask_fifthDigitDashCollision(){
-        assertEquals("-xxx", masker.computeMask("x-xxx"))
+    fun computeMask_fifth(){
+        assertEquals("-xxx", masker.computeMaskForInputCase("x-xxx"))
     }
 
     @Test
-    fun computeMask_sixthDigitDashCollision(){
-        assertEquals("xx", masker.computeMask("xxx"))
+    fun computeMask_sixth(){
+        assertEquals("xx", masker.computeMaskForInputCase("xxx"))
+    }
+
+    @Test
+    fun firstDigitInputThenDeleted(){
+        assertEquals("xxx-xx-xxx",masker.computeMaskForDeleteCase("xx-xx-xxx"))
     }
 }
