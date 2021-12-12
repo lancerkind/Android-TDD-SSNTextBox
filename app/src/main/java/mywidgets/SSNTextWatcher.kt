@@ -15,6 +15,12 @@ class SSNTextWatcher(
     private var userCursor: Int = 0
     private val masker = Masker()
 
+    enum class UserInputCase {
+        DELETE, NEW_CHARACTER
+    }
+
+    private var userInputCase = UserInputCase.NEW_CHARACTER
+
     companion object {
         const val initialMask = "xxx-xx-xxx"
         const val maxCharAllowed = initialMask.length
@@ -36,7 +42,11 @@ class SSNTextWatcher(
         countOfCharactersAdded: Int
     ) {
         if (reentryGuard.appIsAddingAMask() || userCursor == maxCharAllowed) return
-        if (countOfCharactersAdded > 0) this.userCursor += countOfCharactersAdded
+        if (countOfCharactersAdded > 0)  {
+            userCursor += countOfCharactersAdded
+ // userInputCase = UserInputCase.NEW_CHARACTER
+        } else userInputCase = UserInputCase.DELETE
+
         println("beforeTextChanged: charactersInTextEdit " + charactersInTextEdit + " cursorPosition " + cursorPosition + "numberOfCharactersToReplace " + numberOfCharactersToReplace + " countOfCharactersAdded " + countOfCharactersAdded)
     }
 
@@ -48,13 +58,26 @@ class SSNTextWatcher(
         println("afterTextChanged: characters " + charactersInGUI)
         if (reentryGuard.appIsAddingAMask()) return
 
-        mask = StringBuilder(masker.computeMask(mask.toString()))
+        if( userInputCase == UserInputCase.NEW_CHARACTER) userAddsACharacter(charactersInGUI)
+        else userDeletesACharacter(charactersInGUI)
+    }
+
+    private fun userDeletesACharacter(charactersInGUI: Editable?) {
+        mask = StringBuilder(masker.computeMaskForInputCase(mask.toString()))
+        println("afterTextChanged, new mask is computed to be: ${mask.toString()}")
+        safelyAppendMaskOnToEnd(charactersInGUI!!)
+// warning: only passes first simple test. grow code by adding more tests.
+        ssnFieldAccess.setSelectionOfTextEdit(0)
+    }
+
+    private fun userAddsACharacter(charactersInGUI: Editable?) {
+        mask = StringBuilder(masker.computeMaskForInputCase(mask.toString()))
         println("afterTextChanged, new mask is computed to be: ${mask.toString()}")
         safelyAppendMaskOnToEnd(charactersInGUI!!)
 
         // And notice in beforeTextChanged, I'm not using the cursor parameter.  Shouldn't I?
-        if(isInsertionPointNextToDash(charactersInGUI)) {
-            userCursor ++
+        if (isInsertionPointNextToDash(charactersInGUI)) {
+            userCursor++
             ssnFieldAccess.setSelectionOfTextEdit(userCursor)
         } else {
             ssnFieldAccess.setSelectionOfTextEdit(userCursor)

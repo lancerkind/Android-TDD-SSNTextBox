@@ -137,6 +137,11 @@ import kotlin.reflect.KMutableProperty0
  *
  *  Episode 47:
  *  1 "-" != '-'  <-- characters aren't equal to strings.
+ *
+ *  Episode 48:
+ *  1 If you're checking conditions every other step (like UserInput.DELETE versuse NEW_CHARACTER,
+ *  you're probably doing something wrong: take a step back and determine what "flow" you should be on so
+ *  you're not dropping enum checks all over the place.
  */
 
 //@RunWith(RobolectricTestRunner::class)
@@ -219,6 +224,26 @@ class SSNTextWatcherTest {
         assertBooleanStateCorrect(spy007)
         assertMaskCorrect("1xx-xx-xxx", textBox)
         assertEquals(1, positionOfInsertionPoint())
+    }
+
+    @Test
+    fun afterTextChanged_userEntersSingleDigit_ThenDeletes(){
+        // Arrange
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled(0,'1')
+
+        // User presses delete ***
+        textBox.delete(0,1)
+        assertEquals("xx-xx-xxx", textBox.toString())
+        // Notice that in the below line cusorPosition is 0. Android seems to immediately move the cusor for delete.
+        watcher.beforeTextChanged(textBox, 0,1,0)
+        // end user presses delete ***
+
+        // Act
+        watcher.afterTextChanged(textBox)
+
+        // Assert
+        assertMaskCorrect("xxx-xx-xxx", textBox)
+        assertEquals(0, positionOfInsertionPoint())
     }
 
     /**
