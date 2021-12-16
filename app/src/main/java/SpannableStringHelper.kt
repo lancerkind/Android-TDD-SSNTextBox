@@ -1,0 +1,5 @@
+package mywidgets
+
+class SpannableStringHelper {
+
+}
