@@ -12,7 +12,7 @@ class SSNTextWatcher(
     var reentryGuard: TextWatcherActionState = TextWatcherActionState()
 ) : TextWatcher {
     private var mask: StringBuilder = StringBuilder(initialMask)
-    private var userCursor: Int = 0
+    private var userCursor: Int = 0  // It's possible this is extra state.
     private val masker = Masker()
 
     enum class UserInputCase {
@@ -41,19 +41,31 @@ class SSNTextWatcher(
         numberOfCharactersToReplace: Int,
         countOfCharactersAdded: Int
     ) {
-        if (reentryGuard.appIsAddingAMask() || userCursor == maxCharAllowed) return
-        if (countOfCharactersAdded > 0)  {
-            userCursor += countOfCharactersAdded
- // userInputCase = UserInputCase.NEW_CHARACTER
-        } else userInputCase = UserInputCase.DELETE
+        if (reentryGuard.appIsAddingAMask() || hittingTextBoxInputLimit()) return
 
+        if (countOfCharactersAdded > 0)  {
+            userInputCase = UserInputCase.NEW_CHARACTER
+            userCursor += countOfCharactersAdded
+        } else {
+            userInputCase = UserInputCase.DELETE
+            if (insertionPointAbutsBackOfDash(charactersInTextEdit!!)) {  // why double exclamation point?
+                userCursor -=2
+            }else {
+                userCursor--
+            }
+        }
         println("beforeTextChanged: charactersInTextEdit " + charactersInTextEdit + " cursorPosition " + cursorPosition + "numberOfCharactersToReplace " + numberOfCharactersToReplace + " countOfCharactersAdded " + countOfCharactersAdded)
     }
 
     // The below is an interface from TextWatcher
     /*
     * The below overwrites the mask but skips dashes.
+    // Skip dash functionality is handled in a different event depending of adding
+    // a new character or deleting a new character.
+    // when adding: 123-  <- after text changed
+    // when deleting: 123-xx-xxx  <- before text changed
     */
+
     override fun afterTextChanged(charactersInGUI: Editable?) {
         println("afterTextChanged: characters " + charactersInGUI)
         if (reentryGuard.appIsAddingAMask()) return
@@ -63,11 +75,11 @@ class SSNTextWatcher(
     }
 
     private fun userDeletesACharacter(charactersInGUI: Editable?) {
-        mask = StringBuilder(masker.computeMaskForInputCase(mask.toString()))
+        mask = StringBuilder(masker.computeMaskForDeleteCase(mask.toString()))
         println("afterTextChanged, new mask is computed to be: ${mask.toString()}")
         safelyAppendMaskOnToEnd(charactersInGUI!!)
 // warning: only passes first simple test. grow code by adding more tests.
-        ssnFieldAccess.setSelectionOfTextEdit(0)
+        ssnFieldAccess.setSelectionOfTextEdit(userCursor)
     }
 
     private fun userAddsACharacter(charactersInGUI: Editable?) {
@@ -76,7 +88,7 @@ class SSNTextWatcher(
         safelyAppendMaskOnToEnd(charactersInGUI!!)
 
         // And notice in beforeTextChanged, I'm not using the cursor parameter.  Shouldn't I?
-        if (isInsertionPointNextToDash(charactersInGUI)) {
+        if (insertionPointAbutsFrontOfDash(charactersInGUI)) {
             userCursor++
             ssnFieldAccess.setSelectionOfTextEdit(userCursor)
         } else {
@@ -84,11 +96,19 @@ class SSNTextWatcher(
         }
     }
 
-    private fun isInsertionPointNextToDash(charactersInGUI: Editable): Boolean {
-        if(charactersInGUI.length == 1 || userCursor == maxCharAllowed) return false  // Case happens during initial GUI render
+    private fun insertionPointAbutsBackOfDash(charactersInTextEdit : CharSequence): Boolean {
+        if((charactersInTextEdit[userCursor-1]=='-')) return true
+        return false
+    }
+
+
+    private fun insertionPointAbutsFrontOfDash(charactersInGUI: Editable): Boolean {
+        if(charactersInGUI.length == 1 || hittingTextBoxInputLimit()) return false  // Case happens during initial GUI render
         if(charactersInGUI.get(userCursor).equals('-')) return true // 123-xx-xxx
         return false
     }
+
+    private fun hittingTextBoxInputLimit() = userCursor == maxCharAllowed
 
     private fun safelyAppendMaskOnToEnd(characters: Editable) {
         reentryGuard.setAppIsAddingAMask(true)

@@ -102,7 +102,7 @@ import kotlin.reflect.KMutableProperty0
  *  4 question I still have: is it important to pass the closure or pass the function?
  *
  *  Episode 42:
-0 *  2
+ *
  *
  * Episode 43:
  * 1 Interface declaration for properties: https://stackoverflow.com/questions/56026971/kotlin-interface-property-only-require-public-getter-without-public-setter/56027637
@@ -133,7 +133,7 @@ import kotlin.reflect.KMutableProperty0
  *  Episode 46:
  *  1 Next show: we need to solve who handles: given: "1234xx-xxx" then: "123-4x-xxx"
  *  - ideas: masker handle it?, create a class to handle "dash work"?, embed in SSNTextWatcher (the unit testable class but a little difficult due to all the mock objects)
- *  0
+ *
  *
  *  Episode 47:
  *  1 "-" != '-'  <-- characters aren't equal to strings.
@@ -142,6 +142,8 @@ import kotlin.reflect.KMutableProperty0
  *  1 If you're checking conditions every other step (like UserInput.DELETE versuse NEW_CHARACTER,
  *  you're probably doing something wrong: take a step back and determine what "flow" you should be on so
  *  you're not dropping enum checks all over the place.
+ *
+ *  Episode #22
  */
 
 //@RunWith(RobolectricTestRunner::class)
@@ -246,6 +248,62 @@ class SSNTextWatcherTest {
         assertEquals(0, positionOfInsertionPoint())
     }
 
+    @Test
+    fun afterTextChanged_userEntersSingleDigit_ThenDeletes_ThenEntersSingleDigit(){
+        // Arrange
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled(0,'1')
+
+        // *** User presses delete ***
+        textBox.delete(0,1)
+
+        // Act
+        // Notice that in the below line cusorPosition is 0. Android seems to immediately move the cursor for delete.
+        watcher.beforeTextChanged(textBox, 0,1,0)
+        watcher.afterTextChanged(textBox)
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled(0,'1')
+
+        // Assert
+        assertMaskCorrect("1xx-xx-xxx", textBox)
+        assertEquals(1, positionOfInsertionPoint())
+    }
+
+    @Test
+    fun afterTextChanged_userEntersDoubleDigit_ThenDeletesLastDigit_ThenCursurShouldBeAfterFirstDigit(){
+        // Arrange
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled(0,'1')
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled(1,'2')
+        assertEquals(textBox.toString(), "12x-xx-xxx")
+
+        // Act
+        // *** User presses delete ***
+        textBox.delete(1,2)
+        // Android seems to immediately move the cursor for delete.
+        watcher.beforeTextChanged(textBox, 1,1,0)
+        watcher.afterTextChanged(textBox)
+
+        // Assert
+        assertMaskCorrect("1xx-xx-xxx", textBox)
+        assertEquals(1, positionOfInsertionPoint())
+    }
+
+    @Test
+    fun beforeTextChanged_userEntersTripleDigit_ThenDeletesLastDigit_ThenCursorBeAfterSecondDigit(){
+        // Arrange
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled(0,'1')
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled(1,'2')
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled(2,'3')
+        assertEquals(textBox.toString(), "123-xx-xxx")
+
+        // Act
+        // User presses delete
+        watcher.beforeTextChanged(textBox, 3,1,0)
+        watcher.afterTextChanged(textBox)
+
+        // Assert
+        assertMaskCorrect("12x-xx-xxx", textBox)
+        assertEquals(2, positionOfInsertionPoint())
+    }
+
     /**
      * In order to support alpha-numeric SSNs or handle copy from "111-111-111" into
      * SSNField, we need two datastructures to handle this.
@@ -344,7 +402,7 @@ class SSNTextWatcherTest {
     }
 
     @Test
-    fun userInputsEntireMoreThanAllowedChars(){
+    fun userInputsMoreThanAllowedChars(){
         userTypesOnPhoneAndThenTextWatcherEventsAreCalled(0, '1')
         userTypesOnPhoneAndThenTextWatcherEventsAreCalled(1, '2')
         userTypesOnPhoneAndThenTextWatcherEventsAreCalled(2, '3')
@@ -357,6 +415,30 @@ class SSNTextWatcherTest {
         userTypesOnPhoneAndThenTextWatcherEventsAreCalled(9, '8')
         // extra char added
         userTypesOnPhoneAndThenTextWatcherEventsAreCalled(10, '9')
+    }
+
+    @Test
+    fun userInputsMoreThanAllowedCharsAndThenPressesDelete(){
+        // Arrange
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled(0, '1')
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled(1, '2')
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled(2, '3')
+        // dash is position 3
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled(4, '4')
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled(5, '5')
+        // dash is position 6
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled(7, '6')
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled(8, '7')
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled(9, '8')
+
+        // Act: User presses Delete. Cursor position is one position past the last character.
+        watcher.beforeTextChanged(textBox,10,1,0)
+        watcher.afterTextChanged(textBox)
+
+        // Assert
+        assertEquals("123-45-67", textBox.toString())
+        assertEquals(9, positionOfInsertionPoint()) //positions: 0 1 2 3 4 5 6 7 8 9 10
+                                                            // user entry: 1 2 3 - 4 5 - 6 7 8
     }
 
     private fun userTypesOnPhoneAndThenTextWatcherEventsAreCalled(
@@ -463,33 +545,6 @@ class SSNTextWatcherTest {
         assertEquals("12", textBox.toString())
     }
 
-    @Ignore
-    @Test
-    fun onTextChanged_deletingSecondDashDeletesNumberToo(){
-        //Arrange
-        val booleanSpy007 = object: SSNTextWatcher.TextWatcherActionState(){
-            var dashRecorder  = ""
-            override fun setAppIsAddingAMask(state: Boolean) {
-                dashRecorder += state.toString()
-                super.setAppIsAddingAMask(state)
-            }
-        }
-
-        watcher = SSNTextWatcher( SSNFieldMock(textBox), booleanSpy007)
-
-        textBox.append("123-45-")
-        watcher.afterTextChanged(textBox)
-        textBox.delete(6,7)
-        assertEquals("123-45", textBox.toString())
-
-        //Act
-        watcher.onTextChanged(textBox,6,1,0)
-
-        //Assert
-        assertEquals("123-4", textBox.toString())
-        assertEquals("truefalse",booleanSpy007.dashRecorder)
-    }
-
     @Test
     fun learn_reflectionWayToMutateProperties(){
         // arrange
@@ -516,6 +571,7 @@ class SSNTextWatcherTest {
         // act
         createMaskFunctional(mask, {mutablePropertyHere::myProperty })
 
+        // assert
         assertEquals(mask, mutablePropertyHere.myProperty)
     }
 

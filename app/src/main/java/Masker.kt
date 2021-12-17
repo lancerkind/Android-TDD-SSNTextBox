@@ -31,6 +31,14 @@ class Masker {
     }
 
     fun computeMaskForDeleteCase(maskBeforeDeletion: String): String {
-         return "xxx-xx-xxx"
+        if (maskBeforeDeletion == "x-xx-xxx") return "xx-xx-xxx"
+        else if (maskBeforeDeletion == "-xx-xxx") return "x-xx-xxx"
+        else if (maskBeforeDeletion == "x-xxx") return "-xx-xxx"
+        else if (maskBeforeDeletion == "-xxx") return "x-xxx"
+        else if (maskBeforeDeletion == "xx") return "xxx"
+        else if (maskBeforeDeletion == "x") return "xx"
+        else if (maskBeforeDeletion == "") return "x"
+
+        return "xxx-xx-xxx"
     }
 }

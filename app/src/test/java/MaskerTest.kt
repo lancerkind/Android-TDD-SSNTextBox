@@ -2,6 +2,7 @@ package com.example.texteditbasicactivity
 
 import mywidgets.Masker
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.jupiter.api.Assertions.assertEquals
 
@@ -52,5 +53,40 @@ class MaskerTest {
     @Test
     fun firstDigitInputThenDeleted(){
         assertEquals("xxx-xx-xxx",masker.computeMaskForDeleteCase("xx-xx-xxx"))
+    }
+
+    @Test
+    fun secondDigitInputThenDeleted(){
+        assertEquals("xx-xx-xxx",masker.computeMaskForDeleteCase("x-xx-xxx"))
+    }
+
+    @Test
+    fun thirdDigitInputThenDeleted(){
+        assertEquals("x-xx-xxx",masker.computeMaskForDeleteCase("-xx-xxx"))
+    }
+
+    @Test
+    fun forthDigitInputThenDeleted(){
+        assertEquals("-xx-xxx",masker.computeMaskForDeleteCase("x-xxx"))
+    }
+
+    @Test
+    fun fifthDigitInputThenDeleted(){
+        assertEquals("x-xxx",masker.computeMaskForDeleteCase("-xxx"))
+    }
+
+    @Test
+    fun sixthDigitInputThenDeleted(){
+        assertEquals("xxx", masker.computeMaskForDeleteCase("xx"))
+    }
+
+    @Test
+    fun seventhDigitInputThenDeleted(){
+        assertEquals("xx", masker.computeMaskForDeleteCase("x"))
+    }
+
+    @Test
+    fun eightDigitInputThenDeleted(){
+        assertEquals("x", masker.computeMaskForDeleteCase(""))
     }
 }
