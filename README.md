@@ -38,8 +38,8 @@ The good news is that the code isn't completley finished. :-)  Here is what I su
 - demo to the team the working software (including what's not finished: dimming the mask and fix the problems of when you type in 9-10 characters, you can't backspace)
 - show them the textedit code, the text watcher code (and supporting classes), and the test code.
 - discuss the patterns and design principles: 
--- little as code possible in the view layer as that would be untestable for the unit test
--- keep the text watcher small (in fact it can be made smaller) by delegating to other classes so that functionality can be added without dealing with mock classes
+    - little as code possible in the view layer as that would be untestable for the unit test
+    - keep the text watcher small (in fact it can be made smaller) by delegating to other classes so that functionality can be added without dealing with mock classes
 
 After the team understannds the design then do some mobbing to resolve the aformentioned bugs by test driving the code.  If you want to see video of the code being written in this manner go to YouTube and look at the videos on TDD.Academy. There you'll see videos about this Android SSN Text Editer.
 
