@@ -43,6 +43,9 @@ The good news is that the code isn't completley finished. :-)  Here is what I su
 
 After the team understannds the design then do some mobbing to resolve the aformentioned bugs by test driving the code.  If you want to see video of the code being written in this manner go to YouTube and look at the videos on TDD.Academy. There you'll see videos about this Android SSN Text Editer.
 
+# [License is CC0] (https://creativecommons.org/publicdomain/zero/1.0/)
+To the extent possible under law, Lance Kind has waived all copyright and related or neighboring rights to Android-TDD-SSNTextBox. This work is published from: United States.
+
 # Other Resources
 Learn about the Software Testing Pyramid on the Agile Thoughts podcast: https://agilenoir.biz/en/agilethoughts/test-automation-pyramid-series/
 
