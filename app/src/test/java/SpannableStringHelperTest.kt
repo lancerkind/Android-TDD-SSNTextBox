@@ -3,18 +3,14 @@ package com.example.texteditbasicactivity
 import android.graphics.Color
 import android.text.SpannableStringBuilder
 import mywidgets.SpannableStringHelper
-import org.junit.Before
-import org.junit.Ignore
-import org.junit.Test
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Test
 
 class SpannableStringHelperTest {
     lateinit var helper : SpannableStringHelper
 
-    @Before
-    fun before() {
-    }
-
-    @Ignore
+    @Disabled
     @Test
     fun getColor(){
         /*

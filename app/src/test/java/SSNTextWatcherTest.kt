@@ -1,13 +1,12 @@
 package com.example.texteditbasicactivity
 
 import android.text.SpannableString
-import org.junit.Test
-//import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Test
 
-import org.junit.Assert.*
+import org.junit.jupiter.api.Assertions.*
 import mywidgets.*
-import org.junit.Before
-import org.junit.Ignore
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import test.library.MySpannableStringBuilder
 import kotlin.reflect.KMutableProperty0
 
@@ -146,7 +145,6 @@ import kotlin.reflect.KMutableProperty0
  *  Episode #22
  */
 
-//@RunWith(RobolectricTestRunner::class)
 class SSNTextWatcherTest {
     private lateinit var watcher : SSNTextWatcher
     private lateinit var textBox : MySpannableStringBuilder
@@ -173,7 +171,7 @@ class SSNTextWatcherTest {
         }
     }
 
-    @Before
+    @BeforeEach
     fun initializeWatcherAndTextBox(){
         textBox = MySpannableStringBuilder()
         watcher =  SSNTextWatcher(SSNFieldMock(textBox) )
@@ -182,12 +180,12 @@ class SSNTextWatcherTest {
     }
 
     @Test
-    fun mask_correctFormat(){
+    fun mask_CorrectFormat(){
         assertEquals("xxx-xx-xxx", SSNTextWatcher.initialMask)
     }
 
     @Test
-    fun afterTextChanged_guardsFromReentry(){
+    fun afterTextChanged_GuardsFromReentry(){
         // Arrange
         val appAddingMaskMock = object: SSNTextWatcher.TextWatcherActionState(){
             override fun appIsAddingAMask(): Boolean {
@@ -212,7 +210,7 @@ class SSNTextWatcherTest {
     }
 
     @Test
-    fun afterTextChanged_userEntersSingleDigit(){
+    fun afterTextChanged_UserEntersSingleDigit(){
         // Arrange
         val spy007 = Spy()
         watcher = SSNTextWatcher( SSNFieldMock(textBox), spy007)
@@ -229,7 +227,7 @@ class SSNTextWatcherTest {
     }
 
     @Test
-    fun afterTextChanged_userEntersSingleDigit_ThenDeletes(){
+    fun afterTextChanged_UserEntersSingleDigit_ThenDeletes(){
         // Arrange
         userTypesOnPhoneAndThenTextWatcherEventsAreCalled(0,'1')
 
@@ -249,7 +247,7 @@ class SSNTextWatcherTest {
     }
 
     @Test
-    fun afterTextChanged_userEntersSingleDigit_ThenDeletes_ThenEntersSingleDigit(){
+    fun afterTextChanged_UserEntersSingleDigit_ThenDeletes_ThenEntersSingleDigit(){
         // Arrange
         userTypesOnPhoneAndThenTextWatcherEventsAreCalled(0,'1')
 
@@ -268,7 +266,7 @@ class SSNTextWatcherTest {
     }
 
     @Test
-    fun afterTextChanged_userEntersDoubleDigit_ThenDeletesLastDigit_ThenCursurShouldBeAfterFirstDigit(){
+    fun afterTextChanged_UserEntersDoubleDigit_ThenDeletesLastDigit_ThenCursorShouldBeAfterFirstDigit(){
         // Arrange
         userTypesOnPhoneAndThenTextWatcherEventsAreCalled(0,'1')
         userTypesOnPhoneAndThenTextWatcherEventsAreCalled(1,'2')
@@ -287,7 +285,7 @@ class SSNTextWatcherTest {
     }
 
     @Test
-    fun beforeTextChanged_userEntersTripleDigit_ThenDeletesLastDigit_ThenCursorBeAfterSecondDigit(){
+    fun beforeTextChanged_UserEntersTripleDigit_ThenDeletesLastDigit_ThenCursorBeAfterSecondDigit(){
         // Arrange
         userTypesOnPhoneAndThenTextWatcherEventsAreCalled(0,'1')
         userTypesOnPhoneAndThenTextWatcherEventsAreCalled(1,'2')
@@ -350,7 +348,7 @@ class SSNTextWatcherTest {
      */
 
     @Test
-    fun afterTextChanged_userEntersTwoDigits(){
+    fun afterTextChanged_UserEntersTwoDigits(){
         // Arrange
         userTypesOnPhoneAndThenTextWatcherEventsAreCalled(0, '1')
         assertMaskCorrect("1xx-xx-xxx", textBox)
@@ -370,7 +368,7 @@ class SSNTextWatcherTest {
     }
 
     @Test
-    fun afterTextChanged_userEntersThirdDigitAndCursorJumpsPastDash(){
+    fun afterTextChanged_UserEntersThirdDigitAndCursorJumpsPastDash(){
         // Arrange
         userTypesOnPhoneAndThenTextWatcherEventsAreCalled(0, '1')
         userTypesOnPhoneAndThenTextWatcherEventsAreCalled(1, '2')
@@ -441,6 +439,31 @@ class SSNTextWatcherTest {
                                                             // user entry: 1 2 3 - 4 5 - 6 7 8
     }
 
+    @Test
+    fun userInputsMaxAllowedCharsAndThenPressesDelete(){
+        // Arrange
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled(0, '1')
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled(1, '2')
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled(2, '3')
+        // dash is position 3
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled(4, '4')
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled(5, '5')
+        // dash is position 6
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled(7, '6')
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled(8, '7')
+        userTypesOnPhoneAndThenTextWatcherEventsAreCalled(9, '8')
+
+        // Act: User presses Delete. Cursor position is one position past the last character.
+        textBox.delete(9,10)
+        watcher.beforeTextChanged(textBox,9,1,0)
+        watcher.afterTextChanged(textBox)
+
+        // Assert
+        assertEquals("123-45-67", textBox.toString())
+        assertEquals(9, positionOfInsertionPoint()) //positions: 0 1 2 3 4 5 6 7 8 9 10
+        // user entry: 1 2 3 - 4 5 - 6 7 8
+    }
+
     private fun userTypesOnPhoneAndThenTextWatcherEventsAreCalled(
         cursorPositionBeforeUserInput: Int,
         userInput: Char
@@ -452,7 +475,7 @@ class SSNTextWatcherTest {
     }
 
     @Test
-    fun learn_equalsAndDash(){
+    fun learn_EqualsAndDash(){
         val ssn = "123-xx-xxx"
         assertTrue(ssn.get(3).equals('-'))
     }
@@ -467,9 +490,9 @@ class SSNTextWatcherTest {
         assertEquals("truefalse", spy.methodRecorder)
     }
 
-    @Ignore
+    @Disabled
     @Test
-    fun afterTextChanged_maskIsFaded(){
+    fun afterTextChanged_MaskIsFaded(){
         userTypesOnPhone("1")
         watcher.afterTextChanged(textBox)
      //   assertEquals(textBox.get())
@@ -502,7 +525,7 @@ class SSNTextWatcherTest {
 
 
     @Test
-    fun learn_howAppendWorks(){
+    fun learn_HowAppendWorks(){
         assertEquals("", textBox.toString())
         textBox.append("1",0,1)
         assertEquals("1", textBox.toString())
@@ -514,9 +537,8 @@ class SSNTextWatcherTest {
         assertEquals("123", textBox.toString())
     }
 
-    @Ignore
     @Test
-    fun onTextChanged_whenAddingDashDoesntRecurse() {
+    fun onTextChanged_UserEntersDash_guardsFromRecurse() {
         // Arrange
         val actionState007 = object: SSNTextWatcher.TextWatcherActionState(){
             override fun appIsAddingAMask(): Boolean {
@@ -529,14 +551,14 @@ class SSNTextWatcherTest {
         watcher.afterTextChanged(textBox)
 
         // Act
-        watcher.onTextChanged(textBox, 2, 0, 1)
+        watcher.onTextChanged(textBox, 3, 0, 1)
 
         // Assert
         assertEquals("123-",  textBox.toString())
     }
 
     @Test
-    fun learn_howToUsedelete() {
+    fun learn_HowToUsedelete() {
         textBox.append("123-")
 
         // Act
@@ -546,7 +568,7 @@ class SSNTextWatcherTest {
     }
 
     @Test
-    fun learn_reflectionWayToMutateProperties(){
+    fun learn_ReflectionWayToMutateProperties(){
         // arrange
         val mutablePropertyHere = WithMutableProperty()
         val mask = "xxx-xx-xxx"
@@ -563,7 +585,7 @@ class SSNTextWatcherTest {
 
     // You can @AgileThoughts1 <- tweet me here
     @Test
-    fun learn_functionalWayToMutateProperties() {
+    fun learn_FunctionalWayToMutateProperties() {
         // arrange
         val mutablePropertyHere = WithMutableProperty()
         val mask = "xxx-xx-xxx"

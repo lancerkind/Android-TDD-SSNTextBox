@@ -2,7 +2,6 @@ package com.example.texteditbasicactivity
 
 import mywidgets.Masker
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
 import org.junit.jupiter.api.Assertions.assertEquals
 
@@ -15,13 +14,13 @@ class MaskerTest {
     }
 
     @Test
-    fun computeMask_firstDigitInput()    {
+    fun computeMask_FirstDigitInput()    {
         // Arrange, Act, and Assert
         assertEquals("xx-xx-xxx", masker.computeMaskForInputCase("xxx-xx-xxx"))
     }
 
     @Test
-    fun computeMask_secondDigit() {
+    fun computeMask_SecondDigit() {
         // Arrange
         val currentMask = "xx-xx-xxx"
 
@@ -30,23 +29,23 @@ class MaskerTest {
     }
 
     @Test
-    fun computeMask_thirdDigit() {
+    fun computeMask_ThirdDigit() {
         // Arrange, Act, and Assert
         assertEquals("-xx-xxx", masker.computeMaskForInputCase("x-xx-xxx"))
     }
 
     @Test
-    fun computeMask_fourthDigitDashCollision(){
+    fun computeMask_FourthDigitDashCollision(){
         assertEquals("x-xxx", masker.computeMaskForInputCase("-xx-xxx"))
     }
 
     @Test
-    fun computeMask_fifth(){
+    fun computeMask_Fifth(){
         assertEquals("-xxx", masker.computeMaskForInputCase("x-xxx"))
     }
 
     @Test
-    fun computeMask_sixth(){
+    fun computeMask_Sixth(){
         assertEquals("xx", masker.computeMaskForInputCase("xxx"))
     }
 
